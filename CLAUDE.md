@@ -6,15 +6,17 @@ text protocol on stdin/stdout — no graphics. Engine: `Kung-Fu-Chess/` (headers
 
 ## Agent team
 
-The main conversation is the **team lead** (reports to Brachi, who is the project
+The main conversation is the **team lead** (reports to Rachel, who is the project
 manager). It orchestrates three subagents per feature and **gates every commit**: agents
 never commit — after each phase (develop / test / fix / refactor) the team lead reports
-the result and asks Brachi to commit, and only then proceeds. It orchestrates:
+the result and asks Rachel to commit, and only then proceeds. It orchestrates:
 
-1. **architect** — slices the feature into tiny steps, picks the design pattern, and
-   defines the focused test list up front. Asks Brachi about real decisions.
-2. **implementer** — Senior C++ dev; executes one approved step via the commit cycle.
-3. **reviewer** — reviews the step's diff for bugs, right-sized design, and conventions.
+1. **architect** (Bigtan) — slices the feature into tiny steps, picks the design pattern,
+   and defines the focused test list up front. Asks Rachel about real decisions.
+2. **implementer** (Teresh) — Senior C++ dev; executes one approved step via the commit
+   cycle.
+3. **reviewer** (Israel) — reviews the step's diff for bugs, right-sized design, and
+   conventions.
 
 ## Where the detail lives (load on demand)
 

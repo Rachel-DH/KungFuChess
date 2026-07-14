@@ -23,12 +23,12 @@ To avoid "testing only what I built" bias without adding an agent, three roles s
 - **implementer** *writes* exactly those cases as doctest tests — no inventing/dropping.
 - **reviewer** *audits* coverage independently — flags a missing edge case or bloat.
 
-## Per-step commit cycle — gated by Brachi (strict order)
+## Per-step commit cycle — gated by Rachel (strict order)
 
 The test list is **defined up front by the architect**, before development. Then each
 phase is a **gate**: the implementer does ONLY that phase's work, builds/runs tests, and
-hands back; the **team lead announces the gate and asks Brachi to commit**; Brachi
-commits himself; then the next phase begins. Agents do **not** commit — Brachi does.
+hands back; the **team lead announces the gate and asks Rachel to commit**; Rachel
+commits themself; then the next phase begins. Agents do **not** commit — Rachel does.
 
 Order of gates:
 
@@ -41,7 +41,7 @@ Skip a gate that has no real change (say so — "no bugfix needed, skipping"). *
 for a commit on a red build** — build and run the tests before announcing a gate. Keep
 each phase scoped to the current step only, so each commit is clean and single-purpose.
 
-Suggested commit message ending (Brachi's choice — the harness policy is), with the
+Suggested commit message ending (Rachel's choice — the harness policy is), with the
 model name filled in to match whichever Claude model actually did the work this
 session (check the session/system info — don't assume):
 
@@ -49,8 +49,8 @@ session (check the session/system info — don't assume):
 Co-Authored-By: Claude <actual model name> <noreply@anthropic.com>
 ```
 
-> Alternative mode (if Brachi ever prefers it): agents auto-commit each phase instead of
-> gating. Default is the gated, Brachi-commits flow above.
+> Alternative mode (if Rachel ever prefers it): agents auto-commit each phase instead of
+> gating. Default is the gated, Rachel-commits flow above.
 
 ## Build & test commands (MSVC)
 
