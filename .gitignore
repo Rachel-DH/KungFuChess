@@ -362,5 +362,8 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+# CMake out-of-source build tree
+/build/
+
 # Locally bootstrapped build tools (e.g. vcpkg checkout)
 tools/
