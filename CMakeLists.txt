@@ -12,6 +12,22 @@ if(KFC_BUILD_UI AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     unset(_kfc_vcpkg_toolchain)
 endif()
 
+# Also pick up a vendored OpenCV package (extracted straight from the
+# opencv.org Windows release) automatically, if present.
+if(KFC_BUILD_UI AND NOT DEFINED OpenCV_DIR)
+    set(_kfc_opencv_dir "${CMAKE_CURRENT_SOURCE_DIR}/deps/opencv/build")
+    if(EXISTS "${_kfc_opencv_dir}/OpenCVConfig.cmake")
+        set(OpenCV_DIR "${_kfc_opencv_dir}" CACHE PATH "")
+        # The Windows pack only ships vc16 (VS2019) binaries, and its compiler
+        # detection doesn't know about newer MSVC point releases (e.g. recent
+        # VS2022 updates). The vc16 binaries are ABI-compatible, so pin the
+        # runtime explicitly instead of letting detection fail.
+        set(OpenCV_ARCH x64 CACHE STRING "")
+        set(OpenCV_RUNTIME vc16 CACHE STRING "")
+    endif()
+    unset(_kfc_opencv_dir)
+endif()
+
 project(KungFuChess CXX)
 
 set(CMAKE_CXX_STANDARD 17)

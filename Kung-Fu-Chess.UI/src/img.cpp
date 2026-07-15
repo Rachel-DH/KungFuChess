@@ -1,4 +1,4 @@
-#include "img.hpp"
+#include "img.h"
 #include <iostream>
 #include <stdexcept>
 
