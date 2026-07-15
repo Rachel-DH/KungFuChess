@@ -367,3 +367,6 @@ FodyWeavers.xsd
 
 # Locally bootstrapped build tools (e.g. vcpkg checkout)
 tools/
+
+# Locally vendored third-party libraries (e.g. OpenCV Windows package)
+deps/

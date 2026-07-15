@@ -1,8 +1,9 @@
 # Kung-Fu-Chess
 
-Real-time chess variant engine (C++17, MSVC/Visual Studio). Pure logic core driven by a
-text protocol on stdin/stdout — no graphics. Engine: `Kung-Fu-Chess/` (headers in
-`include/`, sources in `src/`). Tests: `Kung-Fu-Chess.Tests/` (doctest).
+Real-time chess variant engine (C++17, MSVC toolset, built with CMake). Pure logic core
+driven by a text protocol on stdin/stdout — no graphics. Engine: `Kung-Fu-Chess/`
+(headers in `include/`, sources in `src/`). Tests: `Kung-Fu-Chess.Tests/` (doctest).
+UI: `Kung-Fu-Chess.UI/` (OpenCV via vcpkg).
 
 ## Agent team
 
@@ -27,5 +28,5 @@ the result and asks Rachel to commit, and only then proceeds. It orchestrates:
 
 ## Build & test
 
-Visual Studio solution `Kung-Fu-Chess.sln` (x64/Debug). See the **feature-workflow** skill
-for the exact MSBuild + test-runner commands.
+CMake (`CMakeLists.txt` at the repo root, one per subproject). See the
+**feature-workflow** skill for the exact configure/build/test-runner commands.

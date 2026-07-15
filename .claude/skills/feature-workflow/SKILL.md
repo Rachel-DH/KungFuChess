@@ -52,19 +52,24 @@ Co-Authored-By: Claude <actual model name> <noreply@anthropic.com>
 > Alternative mode (if Rachel ever prefers it): agents auto-commit each phase instead of
 > gating. Default is the gated, Rachel-commits flow above.
 
-## Build & test commands (MSVC)
+## Build & test commands (CMake)
 
-This is a Visual Studio solution (`Kung-Fu-Chess.sln`, x64/Debug). Build both projects
-and run the test executable from the command line:
+CMake project (root `CMakeLists.txt`, MSVC toolset, Debug config). `KFC_BUILD_UI=OFF`
+skips `Kung-Fu-Chess.UI` (and its OpenCV/vcpkg dependency) when only the engine and
+tests are needed:
 
 ```bash
-# Build (adjust MSBuild path to the installed VS 2022 edition)
-MSBuild.exe Kung-Fu-Chess.sln -p:Configuration=Debug -p:Platform=x64 -m
+# Configure (adjust cmake.exe path to the installed VS 2022 edition if not on PATH)
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DKFC_BUILD_UI=OFF
+
+# Build
+cmake --build build --config Debug -j
 
 # Run the doctest suite
-./x64/Debug/Kung-Fu-Chess.Tests.exe
+./build/Kung-Fu-Chess.Tests/Debug/Kung-Fu-Chess.Tests.exe
 ```
 
-> First run: locate the real `MSBuild.exe` (e.g. via
-> `vswhere -latest -find MSBuild/**/Bin/MSBuild.exe`) and confirm the test `.exe` output
-> path, then pin the exact working commands here.
+> First run: if `cmake` isn't on PATH, locate the VS-bundled copy (e.g.
+> `Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe` under the VS
+> install dir) and confirm the test `.exe` output path, then pin the exact working
+> commands here.
