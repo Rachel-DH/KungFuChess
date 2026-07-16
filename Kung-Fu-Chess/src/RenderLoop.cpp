@@ -17,6 +17,6 @@ bool RenderLoop::tick(int elapsed_ms) {
         controller_.click(click->first, click->second);
     }
 
-    renderer_.draw(controller_.piece_display_states());
+    renderer_.draw(controller_.piece_display_states(), elapsed_ms);
     return !controller_.game_over();
 }

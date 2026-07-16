@@ -8,6 +8,8 @@ add_library(Kung-Fu-Chess.UI STATIC
     src/renderer_factory.cpp
     src/opencv_input_source.cpp
     src/input_source_factory.cpp
+    src/animation_state_config.cpp
+    src/sprite_animation.cpp
 )
 
 target_include_directories(Kung-Fu-Chess.UI PUBLIC

@@ -10,5 +10,5 @@ class IRenderer {
 public:
     virtual ~IRenderer() = default;
 
-    virtual void draw(const std::vector<PieceDisplayState>& states) = 0;
+    virtual void draw(const std::vector<PieceDisplayState>& states, int elapsed_ms) = 0;
 };

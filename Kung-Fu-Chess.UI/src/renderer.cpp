@@ -48,7 +48,7 @@ Img& Renderer::piece_image(PieceType type, Color color) {
     return piece_images_.emplace(code, std::move(sprite)).first->second;
 }
 
-void Renderer::draw(const std::vector<PieceDisplayState>& states) {
+void Renderer::draw(const std::vector<PieceDisplayState>& states, int elapsed_ms) {
     Img board;
     board.read(board_path_, board_size_, false);
 
