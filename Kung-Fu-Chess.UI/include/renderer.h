@@ -19,8 +19,9 @@ public:
 
     // Draws the board, then every piece in `states` on top of it, and shows
     // the composed frame. Does not poll input or pace frames — that's the
-    // caller's job.
-    void draw(const std::vector<PieceDisplayState>& states) override;
+    // caller's job. `elapsed_ms` is the time advanced this tick; not yet
+    // consumed here (a later step drives per-piece animation from it).
+    void draw(const std::vector<PieceDisplayState>& states, int elapsed_ms) override;
 
 private:
     // Returns the idle sprite for (type, color), loading and caching it on

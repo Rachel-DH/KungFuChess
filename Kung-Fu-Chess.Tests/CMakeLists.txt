@@ -23,6 +23,7 @@ add_executable(Kung-Fu-Chess.Tests
     src/Controller/ControllerTests.cpp
     src/CommandProcessor/CommandProcessorTests.cpp
     src/ProtocolIO/ProtocolIOTests.cpp
+    src/RenderLoop/RenderLoopTests.cpp
     ${KFC_ENGINE_DIR}/src/Board.cpp
     ${KFC_ENGINE_DIR}/src/Parser.cpp
     ${KFC_ENGINE_DIR}/src/GameEngine.cpp
@@ -33,9 +34,13 @@ add_executable(Kung-Fu-Chess.Tests
     ${KFC_ENGINE_DIR}/src/Controller.cpp
     ${KFC_ENGINE_DIR}/src/CommandProcessor.cpp
     ${KFC_ENGINE_DIR}/src/ProtocolIO.cpp
+    ${KFC_ENGINE_DIR}/src/RenderLoop.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation_state_config.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/sprite_animation.cpp
 )
 
 target_include_directories(Kung-Fu-Chess.Tests PRIVATE
     include
     ${KFC_ENGINE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/include
 )
