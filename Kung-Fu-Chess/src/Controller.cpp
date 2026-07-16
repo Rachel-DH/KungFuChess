@@ -5,6 +5,10 @@
 Controller::Controller(Board board, long long move_ms_per_cell) : engine_(std::move(board), move_ms_per_cell) {
 }
 
+Controller Controller::standard_start(long long move_ms_per_cell) {
+    return Controller(GameEngine::standard_start_board(), move_ms_per_cell);
+}
+
 bool Controller::handle_click_with_selection(Position cell, std::optional<Color> clicked_color, bool clicked_cell_is_selectable) {
     std::optional<Color> selected_color = engine_.color_at(*selected_);
     if (!selected_color.has_value()) {

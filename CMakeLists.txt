@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 
-option(KFC_BUILD_UI "Build Kung-Fu-Chess.UI (requires a vendored OpenCV under deps/opencv)" ON)
-
 # Pick up a vendored OpenCV package (extracted straight from the opencv.org
 # Windows release) automatically, if present. Only Kung-Fu-Chess.UI needs it
-# — the core engine (Kung-Fu-Chess) stays free of any OpenCV dependency.
-if(KFC_BUILD_UI AND NOT DEFINED OpenCV_DIR)
+# — Kung-Fu-Chess.Tests recompiles the engine sources directly and stays
+# free of any OpenCV dependency.
+if(NOT DEFINED OpenCV_DIR)
     set(_kfc_opencv_dir "${CMAKE_CURRENT_SOURCE_DIR}/deps/opencv/build")
     if(EXISTS "${_kfc_opencv_dir}/OpenCVConfig.cmake")
         set(OpenCV_DIR "${_kfc_opencv_dir}" CACHE PATH "")
@@ -24,9 +23,6 @@ project(KungFuChess CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_subdirectory(Kung-Fu-Chess.UI)
 add_subdirectory(Kung-Fu-Chess)
 add_subdirectory(Kung-Fu-Chess.Tests)
-
-if(KFC_BUILD_UI)
-    add_subdirectory(Kung-Fu-Chess.UI)
-endif()

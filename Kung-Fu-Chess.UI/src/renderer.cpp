@@ -50,7 +50,7 @@ Img& Renderer::piece_image(PieceType type, Color color) {
 
 void Renderer::draw(const std::vector<PieceDisplayState>& states) {
     Img board;
-    board.read(board_path_, board_size_, true);
+    board.read(board_path_, board_size_, false);
 
     for (const auto& state : states) {
         Img& piece = piece_image(state.type, state.color);

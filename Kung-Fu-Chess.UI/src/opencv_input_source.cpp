@@ -2,6 +2,12 @@
 
 #include <utility>
 
+namespace {
+
+constexpr int kEscapeKey = 27;
+
+} // namespace
+
 OpenCvInputSource::OpenCvInputSource(std::string window_name)
     : window_name_(std::move(window_name)) {
     // cv::setMouseCallback only attaches if the window already exists;
@@ -26,4 +32,14 @@ std::optional<std::pair<int, int>> OpenCvInputSource::poll_click() {
     std::optional<std::pair<int, int>> click = pending_click_;
     pending_click_.reset();
     return click;
+}
+
+bool OpenCvInputSource::poll_quit() {
+    // Required every frame or the window appears frozen: OpenCV only
+    // pumps its window/mouse event queue while a wait function is running.
+    int key = cv::waitKey(1);
+    if (key == kEscapeKey) {
+        return true;
+    }
+    return cv::getWindowProperty(window_name_, cv::WND_PROP_VISIBLE) < 1;
 }
