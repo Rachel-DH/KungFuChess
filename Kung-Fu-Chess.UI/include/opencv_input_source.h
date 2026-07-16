@@ -19,6 +19,10 @@ public:
 
     std::optional<std::pair<int, int>> poll_click() override;
 
+    // Pumps OpenCV's event queue via cv::waitKey(1) and reports whether
+    // Escape was pressed or the window was closed since the last poll.
+    bool poll_quit() override;
+
 private:
     // cv::setMouseCallback needs a C-style function pointer; `userdata`
     // carries the OpenCvInputSource instance through to handle_mouse().

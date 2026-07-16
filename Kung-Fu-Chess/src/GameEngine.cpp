@@ -7,6 +7,23 @@ GameEngine::GameEngine(Board board, long long move_ms_per_cell)
     : board_(std::move(board)), arbiter_(board_, move_ms_per_cell) {
 }
 
+Board GameEngine::standard_start_board() {
+    return Parser::parse_board({
+        "bR bN bB bQ bK bB bN bR",
+        "bP bP bP bP bP bP bP bP",
+        ".  .  .  .  .  .  .  .",
+        ".  .  .  .  .  .  .  .",
+        ".  .  .  .  .  .  .  .",
+        ".  .  .  .  .  .  .  .",
+        "wP wP wP wP wP wP wP wP",
+        "wR wN wB wQ wK wB wN wR",
+    });
+}
+
+GameEngine GameEngine::standard_start(long long move_ms_per_cell) {
+    return GameEngine(standard_start_board(), move_ms_per_cell);
+}
+
 bool GameEngine::is_selectable(Position cell) const {
     if (state_ == GameState::GameOver) {
         return false;

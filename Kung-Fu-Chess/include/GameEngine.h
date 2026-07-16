@@ -31,6 +31,14 @@ public:
 
     explicit GameEngine(Board board, long long move_ms_per_cell = kDefaultMoveMsPerCell);
 
+    // Fully-constructed GameEngine on the standard 8x8 chess starting position.
+    static GameEngine standard_start(long long move_ms_per_cell = kDefaultMoveMsPerCell);
+
+    // The Board for the standard starting position, without wrapping it in a
+    // GameEngine — for callers (e.g. Controller::standard_start) that build
+    // their own engine from a Board and must never see GameEngine directly.
+    static Board standard_start_board();
+
     // Validates the move against the piece's own rule and against any move
     // already in flight on its route, then queues it via RealTimeArbiter.
     // False (board unchanged) if illegal, the game is over, there's no

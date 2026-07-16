@@ -14,6 +14,9 @@ class Controller {
 public:
     explicit Controller(Board board, long long move_ms_per_cell = GameEngine::kDefaultMoveMsPerCell);
 
+    // Fully-constructed Controller on the standard 8x8 chess starting position.
+    static Controller standard_start(long long move_ms_per_cell = GameEngine::kDefaultMoveMsPerCell);
+
     // Selects a piece, reselects onto another friendly piece, or requests a
     // move of the current selection. A click outside the board cancels the
     // selection instantly. A move the engine rejects leaves the selection
