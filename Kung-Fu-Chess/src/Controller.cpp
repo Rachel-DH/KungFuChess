@@ -62,3 +62,7 @@ void Controller::wait(int milliseconds) {
 void Controller::print(std::ostream& out) const {
     engine_.print(out);
 }
+
+std::vector<PieceDisplayState> Controller::piece_display_states() const {
+    return engine_.piece_display_states();
+}

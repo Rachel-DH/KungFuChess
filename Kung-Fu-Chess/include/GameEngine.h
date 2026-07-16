@@ -2,10 +2,25 @@
 
 #include <iostream>
 #include <optional>
+#include <vector>
 
 #include "Board.h"
 #include "Constants.h"
+#include "Position.h"
 #include "RealTimeArbiter.h"
+#include "Types.h"
+
+enum class GameState { Running, GameOver };
+
+// Decoupled snapshot of one occupied cell, for the UI to render without
+// touching Board/Piece internals.
+struct PieceDisplayState {
+    Position position;
+    PieceType type;
+    Color color;
+    bool is_moving;
+    bool is_airborne;
+};
 
 // Facade: coordinates Board, RealTimeArbiter, and the Piece/RuleEngine move
 // rules behind one simple move/jump/wait/print interface.
@@ -38,7 +53,8 @@ public:
     void print(std::ostream& out) const;
 
     long long clock_ms() const { return arbiter_.clock_ms(); }
-    bool game_over() const { return game_over_; }
+    GameState state() const { return state_; }
+    bool game_over() const { return state_ == GameState::GameOver; }
 
     int width() const { return board_.get_width(); }
     int height() const { return board_.get_height(); }
@@ -49,8 +65,12 @@ public:
 
     std::optional<Color> color_at(Position cell) const;
 
+    // Snapshot of every occupied cell, for rendering. Independent of
+    // Board/Piece storage, and available even after the game is over.
+    std::vector<PieceDisplayState> piece_display_states() const;
+
 private:
     Board board_;
     RealTimeArbiter arbiter_;
-    bool game_over_ = false;
+    GameState state_ = GameState::Running;
 };
