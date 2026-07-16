@@ -8,7 +8,7 @@ GameEngine::GameEngine(Board board, long long move_ms_per_cell)
 }
 
 bool GameEngine::is_selectable(Position cell) const {
-    if (game_over_) {
+    if (state_ == GameState::GameOver) {
         return false;
     }
     std::optional<Cell> piece = board_.get_at(cell.x, cell.y);
@@ -24,7 +24,7 @@ std::optional<Color> GameEngine::color_at(Position cell) const {
 }
 
 bool GameEngine::request_move(Position start, Position dest) {
-    if (game_over_) {
+    if (state_ == GameState::GameOver) {
         return false;
     }
 
@@ -59,7 +59,7 @@ bool GameEngine::request_move(Position start, Position dest) {
 }
 
 bool GameEngine::request_jump(Position cell) {
-    if (game_over_) {
+    if (state_ == GameState::GameOver) {
         return false;
     }
 
@@ -75,10 +75,30 @@ bool GameEngine::request_jump(Position cell) {
 // Ends the game if an enemy king was captured while settling.
 void GameEngine::wait(int milliseconds) {
     if (milliseconds > 0 && arbiter_.advance(milliseconds)) {
-        game_over_ = true;
+        state_ = GameState::GameOver;
     }
 }
 
 void GameEngine::print(std::ostream& out) const {
     out << Parser::board_to_string(board_) << "\n";
+}
+
+std::vector<PieceDisplayState> GameEngine::piece_display_states() const {
+    std::vector<PieceDisplayState> states;
+    for (int y = 0; y < board_.get_height(); ++y) {
+        for (int x = 0; x < board_.get_width(); ++x) {
+            std::optional<Cell> piece = board_.get_at(x, y);
+            if (!piece.has_value()) {
+                continue;
+            }
+            states.push_back(PieceDisplayState{
+                Position{ x, y },
+                piece->type,
+                piece->color,
+                arbiter_.is_moving(x, y),
+                arbiter_.is_airborne(x, y),
+            });
+        }
+    }
+    return states;
 }

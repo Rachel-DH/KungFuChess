@@ -31,6 +31,10 @@ public:
     // Prints the settled board; pieces mid-move still show at their origin.
     void print(std::ostream& out) const;
 
+    // Snapshot of every occupied cell, for rendering. Independent of
+    // Board/Piece storage, and available even after the game is over.
+    std::vector<PieceDisplayState> piece_display_states() const;
+
     bool has_selection() const { return selected_.has_value(); }
     std::optional<Position> selected() const { return selected_; }
     bool game_over() const { return engine_.game_over(); }
