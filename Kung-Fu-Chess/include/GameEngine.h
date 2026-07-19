@@ -10,21 +10,27 @@
 #include "RealTimeArbiter.h"
 #include "Types.h"
 
-enum class GameState { Running, GameOver };
+enum class GameState
+{
+    Running,
+    GameOver
+};
 
-// Decoupled snapshot of one occupied cell, for the UI to render without
-// touching Board/Piece internals.
-struct PieceDisplayState {
+// Decoupled snapshot of one occupied cell, for the UI to render without touching Board/Piece internals.
+struct PieceDisplayState
+{
+    int id; // stable for one occupied cell across a single move/jump in flight; NOT a persistent piece identity — a capture landing on the same cell immediately after can reuse it
     Position position;
     PieceType type;
     Color color;
     bool is_moving;
     bool is_airborne;
+    PiecePhase phase;
 };
 
-// Facade: coordinates Board, RealTimeArbiter, and the Piece/RuleEngine move
-// rules behind one simple move/jump/wait/print interface.
-class GameEngine {
+// Facade: coordinates Board, RealTimeArbiter, and the Piece/RuleEngine move rules behind one simple move/jump/wait/print interface.
+class GameEngine
+{
 public:
     static constexpr long long kDefaultMoveMsPerCell = constants::kDefaultMoveMsPerCell;
     static constexpr long long kJumpDurationMs = constants::kJumpDurationMs;
@@ -34,31 +40,20 @@ public:
     // Fully-constructed GameEngine on the standard 8x8 chess starting position.
     static GameEngine standard_start(long long move_ms_per_cell = kDefaultMoveMsPerCell);
 
-    // The Board for the standard starting position, without wrapping it in a
-    // GameEngine — for callers (e.g. Controller::standard_start) that build
-    // their own engine from a Board and must never see GameEngine directly.
+    // The Board for the standard starting position, without wrapping it in a GameEngine — for callers that build their own engine and must never see GameEngine directly.
     static Board standard_start_board();
 
-    // Validates the move against the piece's own rule and against any move
-    // already in flight on its route, then queues it via RealTimeArbiter.
-    // False (board unchanged) if illegal, the game is over, there's no
-    // piece at `start`, or it's already moving or airborne. An out-of-range
-    // `start`/`dest` propagates Board's std::out_of_range, provided the game
-    // isn't already over.
+    // Validates the move against the piece's own rule and any move already in flight on its route, then queues it via RealTimeArbiter; false if illegal, game over, no piece at `start`, or already moving/airborne.
     bool request_move(Position start, Position dest);
 
-    // Starts a jump in place at `cell` for kJumpDurationMs. False if the
-    // game is over, there's no piece there, or it's already moving/airborne.
-    // An out-of-range `cell` propagates Board's std::out_of_range, provided
-    // the game isn't already over.
+    // Starts a jump in place at `cell` for kJumpDurationMs; false if the game is over, there's no piece there, or it's already moving/airborne.
     bool request_jump(Position cell);
 
-    // Advances the game clock and settles any pending moves whose arrival
-    // time has now passed.
+    // Advances the game clock and settles any pending moves whose arrival time has now passed.
     void wait(int milliseconds);
 
     // Prints the settled board; pieces mid-move still show at their origin.
-    void print(std::ostream& out) const;
+    void print(std::ostream &out) const;
 
     long long clock_ms() const { return arbiter_.clock_ms(); }
     GameState state() const { return state_; }
@@ -67,14 +62,12 @@ public:
     int width() const { return board_.get_width(); }
     int height() const { return board_.get_height(); }
 
-    // True if `cell` holds a piece that can be selected: present, neither
-    // mid-move nor mid-jump, and the game is not already over.
+    // True if `cell` holds a piece that can be selected: present, neither mid-move nor mid-jump, and the game is not already over.
     bool is_selectable(Position cell) const;
 
     std::optional<Color> color_at(Position cell) const;
 
-    // Snapshot of every occupied cell, for rendering. Independent of
-    // Board/Piece storage, and available even after the game is over.
+    // Snapshot of every occupied cell, for rendering; independent of Board/Piece storage, and available even after the game is over.
     std::vector<PieceDisplayState> piece_display_states() const;
 
 private:

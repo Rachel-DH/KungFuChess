@@ -14,6 +14,12 @@ enum class PieceType {
     P  // Pawn
 };
 
+enum class PiecePhase {
+    Idle,
+    Move,
+    Jump
+};
+
 struct Cell {
     Color color;
     PieceType type;

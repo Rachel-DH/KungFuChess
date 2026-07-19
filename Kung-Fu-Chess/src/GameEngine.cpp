@@ -3,6 +3,20 @@
 #include "Parser.h"
 #include "Piece.h"
 
+namespace {
+
+    PiecePhase piece_phase(bool is_moving, bool is_airborne) {
+        if (is_airborne) {
+            return PiecePhase::Jump;
+        }
+        if (is_moving) {
+            return PiecePhase::Move;
+        }
+        return PiecePhase::Idle;
+    }
+
+} // namespace
+
 GameEngine::GameEngine(Board board, long long move_ms_per_cell)
     : board_(std::move(board)), arbiter_(board_, move_ms_per_cell) {
 }
@@ -50,9 +64,7 @@ bool GameEngine::request_move(Position start, Position dest) {
         return false;
     }
 
-    // Already moving: reject a redirect rather than rescheduling mid-flight.
-    // Explicit, even though conflicts_with_pending_move currently also rejects
-    // this via the shared start cell in its path - don't rely on that being permanent.
+    // Already moving: reject a redirect rather than rescheduling mid-flight (explicit, don't rely on conflicts_with_pending_move's incidental route-sharing rejection).
     if (arbiter_.is_moving(start.x, start.y)) {
         return false;
     }
@@ -108,12 +120,16 @@ std::vector<PieceDisplayState> GameEngine::piece_display_states() const {
             if (!piece.has_value()) {
                 continue;
             }
+            bool is_moving = arbiter_.is_moving(x, y);
+            bool is_airborne = arbiter_.is_airborne(x, y);
             states.push_back(PieceDisplayState{
+                y * board_.get_width() + x,
                 Position{ x, y },
                 piece->type,
                 piece->color,
-                arbiter_.is_moving(x, y),
-                arbiter_.is_airborne(x, y),
+                is_moving,
+                is_airborne,
+                piece_phase(is_moving, is_airborne),
             });
         }
     }

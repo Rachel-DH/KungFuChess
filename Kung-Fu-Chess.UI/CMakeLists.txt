@@ -11,6 +11,10 @@ add_library(Kung-Fu-Chess.UI STATIC
     src/input_source_factory.cpp
     src/animation_state_config.cpp
     src/sprite_animation.cpp
+    src/piece_animation_config_provider.cpp
+    src/piece_naming.cpp
+    src/sprite_frame_counter.cpp
+    src/sprite_manager.cpp
 )
 
 target_include_directories(Kung-Fu-Chess.UI PUBLIC
