@@ -3,6 +3,7 @@ find_package(OpenCV CONFIG REQUIRED)
 set(KFC_ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess)
 
 add_library(Kung-Fu-Chess.UI STATIC
+    src/asset_path.cpp
     src/img.cpp
     src/renderer.cpp
     src/renderer_factory.cpp
