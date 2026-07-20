@@ -2,9 +2,7 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
-#include "GameEngine.h"
 #include "IRenderer.h"
 #include "img.h"
 #include "sprite_manager.h"
@@ -15,8 +13,8 @@ public:
     Renderer(std::string board_path, std::string pieces_dir,
              std::pair<int, int> board_size, int cell_width, int cell_height);
 
-    // Draws the board, then every piece in `states` on top of it, and shows the composed frame; does not poll input or pace frames (caller's job), and `elapsed_ms` isn't consumed here yet.
-    void draw(const std::vector<PieceDisplayState>& states, int elapsed_ms) override;
+    // Draws the board, then every piece in `snapshot` on top of it at its already-computed pixel position, and shows the composed frame; does not poll input or pace frames (caller's job), and `elapsed_ms` isn't consumed here yet.
+    void draw(const RenderSnapshot& snapshot, int elapsed_ms) override;
 
 private:
     std::string board_path_;
