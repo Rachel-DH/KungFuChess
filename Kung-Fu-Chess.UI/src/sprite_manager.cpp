@@ -1,5 +1,6 @@
 #include "sprite_manager.h"
 
+#include <unordered_set>
 #include <utility>
 
 #include "piece_naming.h"
@@ -27,7 +28,7 @@ Img& SpriteManager::piece_image(PieceType type, Color color, PiecePhase phase, i
     return piece_images_.emplace(key, std::move(sprite)).first->second;
 }
 
-Img& SpriteManager::sprite_for(int piece_id, PieceType type, Color color, PiecePhase phase, int elapsed_ms) {
+Img& SpriteManager::sprite_for(int piece_id, PieceType type, Color color, PiecePhase phase) {
     auto phase_it = piece_current_phase_.find(piece_id);
     bool phase_changed = phase_it == piece_current_phase_.end() || phase_it->second != phase;
 
@@ -40,7 +41,37 @@ Img& SpriteManager::sprite_for(int piece_id, PieceType type, Color color, PieceP
         piece_current_phase_[piece_id] = phase;
     }
 
-    SpriteAnimation& anim = piece_animations_.at(piece_id);
-    anim.advance(elapsed_ms);
+    const SpriteAnimation& anim = piece_animations_.at(piece_id);
     return piece_image(type, color, phase, anim.frame_index());
+}
+
+bool SpriteManager::advance_all(int elapsed_ms) {
+    bool any_frame_changed = false;
+    for (auto& entry : piece_animations_) {
+        SpriteAnimation& anim = entry.second;
+        int frame_before = anim.frame_index();
+        anim.advance(elapsed_ms);
+        if (anim.frame_index() != frame_before) any_frame_changed = true;
+    }
+    return any_frame_changed;
+}
+
+void SpriteManager::prune(const std::vector<int>& live_ids) {
+    std::unordered_set<int> live(live_ids.begin(), live_ids.end());
+
+    for (auto it = piece_animations_.begin(); it != piece_animations_.end();) {
+        if (live.find(it->first) == live.end()) {
+            it = piece_animations_.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    for (auto it = piece_current_phase_.begin(); it != piece_current_phase_.end();) {
+        if (live.find(it->first) == live.end()) {
+            it = piece_current_phase_.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
