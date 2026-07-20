@@ -25,6 +25,9 @@ bool RenderLoop::tick(int elapsed_ms) {
         return false;
     }
 
+    // Captured before wait() so a move that settles during this tick's wait() still forces a
+    // fresh fetch below, picking up its arrival at the destination cell.
+    bool was_active = controller_.has_activity();
     controller_.wait(elapsed_ms);
 
     std::optional<std::pair<int, int>> click = input_.poll_click();
@@ -33,11 +36,24 @@ bool RenderLoop::tick(int elapsed_ms) {
     }
 
     std::optional<Position> selected = controller_.selected();
-    RenderSnapshot snapshot;
-    for (const PieceDisplayState& state : controller_.piece_display_states()) {
-        snapshot.pieces.push_back(to_render_state(state, selected));
+    // Position only defines operator==, so compare via negated == rather than !=.
+    bool selection_changed = !(selected == last_selected_);
+    bool movement_dirty = was_active || selection_changed || first_tick_;
+    bool animation_dirty = renderer_.advance_animations(elapsed_ms);
+
+    if (movement_dirty) {
+        cached_snapshot_.pieces.clear();
+        for (const PieceDisplayState& state : controller_.piece_display_states()) {
+            cached_snapshot_.pieces.push_back(to_render_state(state, selected));
+        }
     }
 
-    renderer_.draw(snapshot, elapsed_ms);
+    if (movement_dirty || animation_dirty) {
+        renderer_.draw(cached_snapshot_, elapsed_ms);
+    }
+
+    last_selected_ = selected;
+    first_tick_ = false;
+
     return !controller_.game_over();
 }

@@ -19,10 +19,16 @@ class FakeInputSource : public IInputSource {
 public:
     bool quit = false;
     std::optional<std::pair<int, int>> pending_click;
+    int poll_quit_calls = 0;
+    int poll_click_calls = 0;
 
-    bool poll_quit() override { return quit; }
+    bool poll_quit() override {
+        ++poll_quit_calls;
+        return quit;
+    }
 
     std::optional<std::pair<int, int>> poll_click() override {
+        ++poll_click_calls;
         std::optional<std::pair<int, int>> click = pending_click;
         pending_click.reset();
         return click;
@@ -34,6 +40,8 @@ public:
     int draw_count = 0;
     int last_elapsed_ms = -1;
     RenderSnapshot last_snapshot;
+    bool advance_animations_result = false; // scripted per-tick by the test
+    int advance_animations_call_count = 0;
 
     void draw(const RenderSnapshot& snapshot, int elapsed_ms) override {
         ++draw_count;
@@ -41,7 +49,10 @@ public:
         last_snapshot = snapshot;
     }
 
-    bool advance_animations(int elapsed_ms) override { return false; }
+    bool advance_animations(int elapsed_ms) override {
+        ++advance_animations_call_count;
+        return advance_animations_result;
+    }
 };
 
 // Finds the render state at `cell`'s pixel position, if any occupies it.
@@ -193,6 +204,113 @@ TEST_CASE("after a click selects one piece, only that piece's is_selected is tru
         bool is_selected_piece = piece.pixel_position.x == 0 && piece.pixel_position.y == 0;
         CHECK(piece.is_selected == is_selected_piece);
     }
+}
+
+TEST_CASE("the very first tick after construction always draws, even on a fully idle board") {
+    Controller controller(Parser::parse_board({ "wR . ." }));
+    FakeInputSource input;
+    FakeRenderer renderer;
+    RenderLoop loop(controller, renderer, input);
+
+    loop.tick(0);
+    CHECK(renderer.draw_count == 1);
+}
+
+TEST_CASE("an idle board with no selection and no active animation draws nothing for several consecutive ticks after the forced first tick") {
+    Controller controller(Parser::parse_board({ "wR . ." }));
+    FakeInputSource input;
+    FakeRenderer renderer;
+    RenderLoop loop(controller, renderer, input);
+
+    loop.tick(16); // forced first tick
+    REQUIRE(renderer.draw_count == 1);
+
+    loop.tick(16);
+    loop.tick(16);
+    loop.tick(16);
+    CHECK(renderer.draw_count == 1);
+}
+
+TEST_CASE("an idle board with a looping animation redraws only on ticks where advance_animations reports a frame change") {
+    Controller controller(Parser::parse_board({ "wR . ." }));
+    FakeInputSource input;
+    FakeRenderer renderer;
+    RenderLoop loop(controller, renderer, input);
+
+    loop.tick(16); // forced first tick
+    REQUIRE(renderer.draw_count == 1);
+
+    renderer.advance_animations_result = false;
+    loop.tick(16);
+    CHECK(renderer.draw_count == 1); // no frame change -> no redraw
+
+    renderer.advance_animations_result = true;
+    loop.tick(16);
+    CHECK(renderer.draw_count == 2); // frame changed -> redraw
+
+    renderer.advance_animations_result = false;
+    loop.tick(16);
+    CHECK(renderer.draw_count == 2); // no frame change again -> no redraw
+}
+
+TEST_CASE("a scheduled move draws every tick while in flight, then stops once it settles back to idle") {
+    Controller controller(Parser::parse_board({ "wR . . . ." }));
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                              // select wR at (0,0)
+    controller.click(4 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // move to (4,0); 4 cells of travel time
+    REQUIRE(controller.has_activity());
+
+    FakeInputSource input;
+    FakeRenderer renderer;
+    RenderLoop loop(controller, renderer, input);
+
+    for (int step = 0; step < 4; ++step) {
+        CHECK(loop.tick(static_cast<int>(GameEngine::kDefaultMoveMsPerCell)));
+    }
+    CHECK(renderer.draw_count == 4); // one draw per in-flight tick, including the tick it settles on
+    CHECK_FALSE(controller.has_activity());
+
+    loop.tick(16);
+    loop.tick(16);
+    CHECK(renderer.draw_count == 4); // idle afterward: no further draws
+
+    std::optional<PieceRenderState> arrived = state_at(renderer.last_snapshot.pieces, Position{ 4, 0 });
+    REQUIRE(arrived.has_value());
+}
+
+TEST_CASE("a selection change with no movement and no active animation draws exactly once, then reverts to idle-skipping") {
+    Controller controller(Parser::parse_board({ "wR . ." }));
+    FakeInputSource input;
+    FakeRenderer renderer;
+    RenderLoop loop(controller, renderer, input);
+
+    loop.tick(16); // forced first tick, idle, no selection
+    REQUIRE(renderer.draw_count == 1);
+    loop.tick(16); // still idle -> no redraw
+    REQUIRE(renderer.draw_count == 1);
+
+    input.pending_click = std::make_pair(50, 50); // (0,0) = wR, selects it
+    loop.tick(16);
+    CHECK(renderer.draw_count == 2);
+    REQUIRE(controller.has_selection());
+
+    loop.tick(16); // selection unchanged, idle again -> no redraw
+    loop.tick(16);
+    CHECK(renderer.draw_count == 2);
+}
+
+TEST_CASE("poll_quit and poll_click are invoked every tick, even on ticks that skip fetching and drawing") {
+    Controller controller(Parser::parse_board({ "wR . ." }));
+    FakeInputSource input;
+    FakeRenderer renderer;
+    RenderLoop loop(controller, renderer, input);
+
+    loop.tick(16); // forced first tick
+    loop.tick(16); // idle -> skips fetch/draw
+    loop.tick(16); // idle -> skips fetch/draw
+
+    CHECK(renderer.draw_count == 1);
+    CHECK(input.poll_quit_calls == 3);
+    CHECK(input.poll_click_calls == 3);
 }
 
 }
