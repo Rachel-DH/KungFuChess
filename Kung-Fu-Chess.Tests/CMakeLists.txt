@@ -8,6 +8,7 @@ add_executable(Kung-Fu-Chess.Tests
     src/Parser/BoardToStringTests.cpp
     src/Parser/RoundTripTests.cpp
     src/GameEngine/GameOverTests.cpp
+    src/GameEngine/HasActivityTests.cpp
     src/GameEngine/JumpTests.cpp
     src/GameEngine/PromotionTests.cpp
     src/GameEngine/WaitTests.cpp

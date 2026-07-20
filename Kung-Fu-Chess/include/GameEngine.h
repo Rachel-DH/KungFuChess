@@ -58,6 +58,7 @@ public:
     long long clock_ms() const { return arbiter_.clock_ms(); }
     GameState state() const { return state_; }
     bool game_over() const { return state_ == GameState::GameOver; }
+    bool has_activity() const { return arbiter_.has_activity(); }
 
     int width() const { return board_.get_width(); }
     int height() const { return board_.get_height(); }
