@@ -6,7 +6,10 @@
 TEST_SUITE("BoardMapper") {
 
 TEST_CASE("a pixel maps to the cell containing it") {
-    std::optional<Position> cell = BoardMapper::pixel_to_cell(150, 250, 8, 8); // -> cell (1, 2)
+    std::optional<Position> cell = BoardMapper::pixel_to_cell(
+        constants::kCellSizePx + constants::kCellSizePx / 2,
+        2 * constants::kCellSizePx + constants::kCellSizePx / 2,
+        8, 8); // -> cell (1, 2)
     REQUIRE(cell.has_value());
     CHECK(cell->x == 1);
     CHECK(cell->y == 2);

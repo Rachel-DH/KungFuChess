@@ -116,6 +116,19 @@ void Img::put_text(const std::string &txt, int x, int y, double font_size,
                 color, thickness, cv::LINE_AA);
 }
 
+void Img::draw_rect(int x, int y, int width, int height,
+                    const cv::Scalar &color, int thickness)
+{
+    if (img.empty())
+    {
+        throw std::runtime_error("Image not loaded.");
+    }
+
+    // cv::rectangle centers stroke thickness on the path; inset first so the stroke stays inside (x, y, width, height) instead of bleeding outward.
+    int inset = thickness / 2;
+    cv::rectangle(img, cv::Rect(x + inset, y + inset, width - 2 * inset, height - 2 * inset), color, thickness);
+}
+
 void Img::show()
 {
     if (img.empty())

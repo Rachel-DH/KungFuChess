@@ -8,56 +8,31 @@ class Img {
 public:
     Img();
     
-    /**
-     * Load image from path and optionally resize.
-     * 
-     * @param path Image file to load
-     * @param size Target size in pixels (width, height). If empty, keep original
-     * @param keep_aspect If true, shrink so the longer side fits size while preserving aspect ratio
-     * @param interpolation OpenCV interpolation flag (e.g., cv::INTER_AREA for shrink, cv::INTER_LINEAR for enlarge)
-     * @return Reference to this object for method chaining
-     */
+    // Loads the image at path, optionally resizing to size (keep_aspect fits the longer side); returns *this for chaining.
     Img& read(const std::string& path,
               const std::pair<int, int>& size = {},
               bool keep_aspect = false,
               int interpolation = cv::INTER_AREA);
     
-    /**
-     * Draw this image onto another image at position (x, y)
-     * 
-     * @param other_img The target image to draw on
-     * @param x X coordinate for top-left corner
-     * @param y Y coordinate for top-left corner
-     */
+    // Draws this image onto other_img with its top-left corner at (x, y).
     void draw_on(Img& other_img, int x, int y);
     
-    /**
-     * Put text on the image
-     * 
-     * @param txt Text to draw
-     * @param x X coordinate for text position
-     * @param y Y coordinate for text position (baseline)
-     * @param font_size Font scale factor
-     * @param color Text color (BGR or BGRA)
-     * @param thickness Text thickness
-     */
+    // Draws txt with its baseline at (x, y), scaled by font_size.
     void put_text(const std::string& txt, int x, int y, double font_size,
                   const cv::Scalar& color = cv::Scalar(255, 255, 255, 255),
                   int thickness = 1);
+
+    // Draws an unfilled rectangle outline inset to stay fully within (x, y, width, height); OpenCV centers stroke thickness on the path, so this insets by thickness/2 first to avoid bleeding past the given bounds.
+    void draw_rect(int x, int y, int width, int height,
+                    const cv::Scalar& color, int thickness = 2);
     
-    /**
-     * Display the image in a window
-     */
+    // Displays the image in its own window.
     void show();
-    
-    /**
-     * Get the underlying OpenCV Mat
-     */
+
+    // Returns the underlying OpenCV Mat.
     const cv::Mat& get_mat() const { return img; }
-    
-    /**
-     * Check if image is loaded
-     */
+
+    // True once an image has been successfully read.
     bool is_loaded() const { return !img.empty(); }
 
 private:

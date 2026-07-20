@@ -16,3 +16,7 @@ std::optional<Position> BoardMapper::pixel_to_cell(int pixel_x, int pixel_y, int
 
     return Position{ cell_x, cell_y };
 }
+
+PixelPosition BoardMapper::cell_to_pixel(Position pos, int cell_width, int cell_height) {
+    return PixelPosition{ pos.x * cell_width, pos.y * cell_height };
+}

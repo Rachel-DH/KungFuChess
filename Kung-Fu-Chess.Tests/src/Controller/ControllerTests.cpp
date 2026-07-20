@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include "Constants.h"
 #include "Controller.h"
 #include "GameEngine.h"
 #include "Parser.h"
@@ -78,20 +79,20 @@ TEST_CASE("pixel coordinates map to the containing cell, not just its center") {
         CHECK(controller.selected()->x == 0);
         CHECK(controller.selected()->y == 0);
     }
-    SUBCASE("bottom-right pixel of the same cell (99,99) stays in cell (0,0)") {
-        controller.click(99, 99);
+    SUBCASE("bottom-right pixel of the same cell stays in cell (0,0)") {
+        controller.click(constants::kCellSizePx - 1, constants::kCellSizePx - 1);
         REQUIRE(controller.has_selection());
         CHECK(controller.selected()->x == 0);
         CHECK(controller.selected()->y == 0);
     }
-    SUBCASE("crossing the boundary at x=100 selects the piece in the next cell") {
-        controller.click(100, 50); // cell (1,0) = bN
+    SUBCASE("crossing the boundary at the start of the next cell selects the piece in the next cell") {
+        controller.click(constants::kCellSizePx, constants::kCellSizePx / 2); // cell (1,0) = bN
         REQUIRE(controller.has_selection());
         CHECK(controller.selected()->x == 1);
         CHECK(controller.selected()->y == 0);
     }
     SUBCASE("center of a piece cell, per the spec example") {
-        controller.click(50, 50);
+        controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);
         REQUIRE(controller.has_selection());
         CHECK(controller.selected()->x == 0);
         CHECK(controller.selected()->y == 0);
@@ -150,8 +151,8 @@ TEST_CASE("clicking an empty cell while a piece is selected eventually moves it 
 
 TEST_CASE("clicking an enemy piece while a piece is selected eventually captures it") {
     Controller controller(make_board());
-    controller.click(50, 50);   // select bR at (0,0)
-    controller.click(50, 250);  // wR at (0,2) is white; straight down the column
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2); // select bR at (0,0)
+    controller.click(constants::kCellSizePx / 2, 2 * constants::kCellSizePx + constants::kCellSizePx / 2); // wR at (0,2) is white; straight down the column
 
     CHECK_FALSE(controller.has_selection());
     controller.wait(2 * GameEngine::kDefaultMoveMsPerCell); // 2 cells of travel time
@@ -179,16 +180,16 @@ TEST_CASE("a cell with a move in flight cannot be reselected") {
 
 TEST_CASE("consecutive moves chain correctly once each one arrives") {
     Controller controller(make_board());
-    controller.click(50, 50);  // select bR at (0,0)
-    controller.click(50, 150); // move bR down to (0,1)
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                           // select bR at (0,0)
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx + constants::kCellSizePx / 2);   // move bR down to (0,1)
     controller.wait(GameEngine::kDefaultMoveMsPerCell);
 
-    controller.click(50, 150); // re-select the piece that is now at (0,1)
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx + constants::kCellSizePx / 2);   // re-select the piece that is now at (0,1)
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 0);
     CHECK(controller.selected()->y == 1);
 
-    controller.click(50, 250); // move down to (0,2), capturing wR
+    controller.click(constants::kCellSizePx / 2, 2 * constants::kCellSizePx + constants::kCellSizePx / 2); // move down to (0,2), capturing wR
     controller.wait(GameEngine::kDefaultMoveMsPerCell);
     CHECK_FALSE(controller.has_selection());
     CHECK(board_of(controller) == ". bN .\n. . .\nbR . wN\n");
@@ -221,29 +222,27 @@ TEST_CASE("a piece already moving cannot be redirected to a new destination") {
     controller.click(50, 50);  // select bR at (0,0)
     controller.click(50, 150); // move down to (0,1); 1 cell of travel time
 
-    // Attempt to redirect it mid-route by reselecting its (still visible)
-    // origin cell; this fails, so there is no selection left to redirect.
+    // Attempt to redirect it mid-route by reselecting its (still visible) origin cell; this fails, so there is no selection left to redirect.
     controller.click(50, 50);
     CHECK_FALSE(controller.has_selection());
 
-    // Once the original move arrives, the piece is at its first destination
-    // only; the redirect attempt had no effect.
+    // Once the original move arrives, the piece is at its first destination only; the redirect attempt had no effect.
     controller.wait(GameEngine::kDefaultMoveMsPerCell);
     CHECK(board_of(controller) == ". bN .\nbR . .\nwR . wN\n");
 }
 
 TEST_CASE("a piece can be selected and moved again immediately after arriving, with no cooldown") {
     Controller controller(make_board());
-    controller.click(50, 50);  // select bR at (0,0)
-    controller.click(50, 150); // move down to (0,1)
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                         // select bR at (0,0)
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx + constants::kCellSizePx / 2); // move down to (0,1)
     controller.wait(GameEngine::kDefaultMoveMsPerCell); // arrives; no extra wait afterward
 
-    controller.click(50, 150); // select the just-arrived piece right away
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx + constants::kCellSizePx / 2); // select the just-arrived piece right away
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 0);
     CHECK(controller.selected()->y == 1);
 
-    controller.click(50, 250); // immediately move it again, down to (0,2), capturing wR
+    controller.click(constants::kCellSizePx / 2, 2 * constants::kCellSizePx + constants::kCellSizePx / 2); // immediately move it again, down to (0,2), capturing wR
     CHECK_FALSE(controller.has_selection());
     controller.wait(GameEngine::kDefaultMoveMsPerCell);
     CHECK(board_of(controller) == ". bN .\n. . .\nbR . wN\n");
@@ -268,8 +267,8 @@ TEST_CASE("a blocked straight move is ignored") {
         "bN .",
         ".  .",
     }));
-    controller.click(50, 50);  // select bR at (0,0)
-    controller.click(50, 250); // (0,2) is past bN, which blocks the column at (0,1)
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2); // select bR at (0,0)
+    controller.click(constants::kCellSizePx / 2, 2 * constants::kCellSizePx + constants::kCellSizePx / 2); // (0,2) is past bN, which blocks the column at (0,1)
 
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 0);
@@ -281,10 +280,10 @@ TEST_CASE("a blocked straight move is ignored") {
 TEST_CASE("when two pieces attempt to swap places along the same route, whichever moved first wins") {
     SUBCASE("white moves first") {
         Controller controller(Parser::parse_board({ "wR . . bR" }));
-        controller.click(50, 50);   // select wR at (0,0)
-        controller.click(350, 50);  // move wR across to (3,0), capturing bR; 3 cells of travel time
-        controller.click(350, 50);  // select bR at (3,0); it hasn't moved yet
-        controller.click(50, 50);   // attempt to move bR back to (0,0); collides with wR's route
+        controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                             // select wR at (0,0)
+        controller.click(3 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // move wR across to (3,0), capturing bR; 3 cells of travel time
+        controller.click(3 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // select bR at (3,0); it hasn't moved yet
+        controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                             // attempt to move bR back to (0,0); collides with wR's route
 
         controller.wait(3 * GameEngine::kDefaultMoveMsPerCell);
         CHECK(board_of(controller) == ". . . wR\n");
@@ -292,10 +291,10 @@ TEST_CASE("when two pieces attempt to swap places along the same route, whicheve
 
     SUBCASE("black moves first") {
         Controller controller(Parser::parse_board({ "wR . . bR" }));
-        controller.click(350, 50);  // select bR at (3,0)
-        controller.click(50, 50);   // move bR across to (0,0), capturing wR; 3 cells of travel time
-        controller.click(50, 50);   // select wR at (0,0); it hasn't moved yet
-        controller.click(350, 50);  // attempt to move wR back to (3,0); collides with bR's route
+        controller.click(3 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // select bR at (3,0)
+        controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                             // move bR across to (0,0), capturing wR; 3 cells of travel time
+        controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                             // select wR at (0,0); it hasn't moved yet
+        controller.click(3 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // attempt to move wR back to (3,0); collides with bR's route
 
         controller.wait(3 * GameEngine::kDefaultMoveMsPerCell);
         CHECK(board_of(controller) == "bR . . .\n");
@@ -304,10 +303,10 @@ TEST_CASE("when two pieces attempt to swap places along the same route, whicheve
 
 TEST_CASE("a move rejected for colliding with another move's route keeps the current selection") {
     Controller controller(Parser::parse_board({ "wR . . bR" }));
-    controller.click(50, 50);  // select wR at (0,0)
-    controller.click(350, 50); // move wR across to (3,0); still in flight
-    controller.click(350, 50); // select bR at (3,0)
-    controller.click(50, 50);  // attempt to move bR back to (0,0); collides, rejected
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                             // select wR at (0,0)
+    controller.click(3 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // move wR across to (3,0); still in flight
+    controller.click(3 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // select bR at (3,0)
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                             // attempt to move bR back to (0,0); collides, rejected
 
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 3);
@@ -321,12 +320,12 @@ TEST_CASE("a move onto another route's cell is rejected for its own illegality, 
         ".  .  bP .",
         ".  .  .  .",
     }));
-    controller.click(50, 150);  // select wQ at (0,1)
-    controller.click(350, 150); // move wQ across to (3,1), capturing bK; 3 cells of travel time
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx + constants::kCellSizePx / 2);                             // select wQ at (0,1)
+    controller.click(3 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx + constants::kCellSizePx / 2); // move wQ across to (3,1), capturing bK; 3 cells of travel time
     controller.wait(200);
 
-    controller.click(250, 250); // select bP at (2,2)
-    controller.click(250, 150); // (2,1) is on wQ's route, but this move is illegal anyway: backward for black
+    controller.click(2 * constants::kCellSizePx + constants::kCellSizePx / 2, 2 * constants::kCellSizePx + constants::kCellSizePx / 2); // select bP at (2,2)
+    controller.click(2 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx + constants::kCellSizePx / 2);     // (2,1) is on wQ's route, but this move is illegal anyway: backward for black
 
     controller.wait(3000);
     CHECK(board_of(controller) == ". . . .\n. . . wQ\n. . bP .\n. . . .\n");
@@ -379,24 +378,24 @@ TEST_CASE("selecting then jumping the same piece clears the selection") {
 
 TEST_CASE("once the game is over, further clicks are ignored") {
     Controller controller(Parser::parse_board({ "wR . bK", "wN . ." }));
-    controller.click(50, 50);   // select wR at (0,0)
-    controller.click(250, 50);  // move across to (2,0), capturing bK
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                             // select wR at (0,0)
+    controller.click(2 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // move across to (2,0), capturing bK
     controller.wait(2 * GameEngine::kDefaultMoveMsPerCell);
     REQUIRE(controller.game_over());
 
-    controller.click(50, 150); // attempt to select wN at (0,1); should be ignored
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx + constants::kCellSizePx / 2); // attempt to select wN at (0,1); should be ignored
     CHECK_FALSE(controller.has_selection());
     CHECK(board_of(controller) == ". . wR\nwN . .\n");
 }
 
 TEST_CASE("once the game is over, a click outside the board still clears any stale selection") {
     Controller controller(Parser::parse_board({ "wR . bK", "wN . ." }));
-    controller.click(50, 50);   // select wR at (0,0)
-    controller.click(250, 50);  // move across to (2,0), capturing bK
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                             // select wR at (0,0)
+    controller.click(2 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // move across to (2,0), capturing bK
     controller.wait(2 * GameEngine::kDefaultMoveMsPerCell);
     REQUIRE(controller.game_over());
 
-    controller.click(50, 150); // attempt to select wN; ignored, no selection created
+    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx + constants::kCellSizePx / 2); // attempt to select wN; ignored, no selection created
     controller.click(-50, 50); // outside the board
     CHECK_FALSE(controller.has_selection());
 }
