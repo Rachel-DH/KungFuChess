@@ -40,6 +40,8 @@ public:
         last_elapsed_ms = elapsed_ms;
         last_snapshot = snapshot;
     }
+
+    bool advance_animations(int elapsed_ms) override { return false; }
 };
 
 // Finds the render state at `cell`'s pixel position, if any occupies it.
