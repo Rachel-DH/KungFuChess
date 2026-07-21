@@ -30,8 +30,7 @@ TEST_CASE("a jump lands on the same square when nothing arrives") {
     CHECK(board_of(engine) == ". . .\n. wK .\n. . .\n");
 }
 
-// An enemy arriving during the jump window (here exactly at the landing
-// instant) is captured by the airborne piece, which keeps its cell.
+// An enemy arriving during the jump window (here exactly at the landing instant) is captured by the airborne piece, which keeps its cell.
 TEST_CASE("an airborne piece captures an enemy that arrives during the jump") {
     GameEngine engine(Parser::parse_board({
         ".  .  .",
@@ -45,8 +44,7 @@ TEST_CASE("an airborne piece captures an enemy that arrives during the jump") {
     CHECK(board_of(engine) == ". . .\nwK . .\n. . .\n");
 }
 
-// Jumping only helps while airborne: if the enemy already captured the piece,
-// a later jump does nothing.
+// Jumping only helps while airborne: if the enemy already captured the piece, a later jump does nothing.
 TEST_CASE("a jump after the piece was already captured does not save it") {
     GameEngine engine(Parser::parse_board({
         ".  .  .",
@@ -60,8 +58,7 @@ TEST_CASE("a jump after the piece was already captured does not save it") {
     CHECK(board_of(engine) == ". . .\nbR . .\n. . .\n");
 }
 
-// After the jump window ends, the piece is grounded again and an arriving
-// enemy captures it normally.
+// After the jump window ends, the piece is grounded again and an arriving enemy captures it normally.
 TEST_CASE("an enemy arriving after the jump lands captures the piece normally") {
     GameEngine engine(Parser::parse_board({
         ".  . . .",
@@ -87,8 +84,7 @@ TEST_CASE("a moving piece cannot jump") {
     CHECK(board_of(engine) == ". . wR\n");
 }
 
-// The airborne piece only captures enemies; a friendly piece cannot even move
-// onto its (occupied) cell, so nothing changes.
+// The airborne piece only captures enemies; a friendly piece cannot even move onto its (occupied) cell, so nothing changes.
 TEST_CASE("an airborne piece does not affect a friendly piece") {
     GameEngine engine(Parser::parse_board({
         ".  .  .",
@@ -147,8 +143,7 @@ TEST_CASE("no stale airborne record protects a cell after the window ends") {
     engine.request_move(Position{ 3, 1 }, Position{ 0, 1 });  // bR moves onto (0,1); arrives t=4000
 
     engine.wait(3 * GameEngine::kDefaultMoveMsPerCell);
-    // bR captures the grounded wK normally; the expired airborne record does
-    // not shield the cell.
+    // bR captures the grounded wK normally; the expired airborne record does not shield the cell.
     CHECK(board_of(engine) == ". . . .\nbR . . .\n. . . .\n");
 }
 

@@ -110,16 +110,14 @@ bool Knight::is_available_move(int start_x, int start_y, int dest_x, int dest_y,
 
 namespace {
 
-// A pawn's home row, from which it may open with a two-cell move: white's
-// own edge is the last row of the board, black's is the first.
+// A pawn's home row, from which it may open with a two-cell move: white's own edge is the last row of the board, black's is the first.
 int pawn_start_row(Color color, const Board& board) {
     return color == Color::w ? board.get_height() - 1 : 0;
 }
 
 } // namespace
 
-// A pawn can only be blocked on its two-cell opening move, by a piece on the
-// cell it must pass through; a one-cell move has nothing "between" it.
+// A pawn can only be blocked on its two-cell opening move, by a piece on the cell it must pass through; a one-cell move has nothing "between" it.
 bool Pawn::has_blockers(int start_x, int start_y, int dest_x, int dest_y, const Board& board) const {
     std::optional<Cell> start_cell = board.get_at(start_x, start_y);
     if (!start_cell.has_value()) {
@@ -134,9 +132,7 @@ bool Pawn::has_blockers(int start_x, int start_y, int dest_x, int dest_y, const 
     return board.get_at(start_x, start_y + forward).has_value();
 }
 
-// A pawn moves one cell straight ahead onto an empty cell, two cells straight
-// ahead from its home row (with a clear path), or captures one cell
-// diagonally ahead onto an enemy piece; direction depends on color.
+// A pawn moves one cell straight ahead onto an empty cell, two cells straight ahead from its home row (with a clear path), or captures one cell diagonally ahead onto an enemy piece; direction depends on color.
 bool Pawn::is_available_move(int start_x, int start_y, int dest_x, int dest_y, const Board& board) const {
     std::optional<Cell> start_cell = board.get_at(start_x, start_y);
     if (!start_cell.has_value()) {

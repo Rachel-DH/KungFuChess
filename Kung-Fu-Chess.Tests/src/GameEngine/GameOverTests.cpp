@@ -76,12 +76,7 @@ TEST_CASE("a move already in flight when the game ends still settles on the boar
     CHECK(board_of(engine) == ". . wR .\n. . . .\n. . . .\n. . wN .\n");
 }
 
-// Characterization test (pins existing behavior before any refactor): an
-// enemy piece can jump onto its own cell to guard it, and if a king arrives
-// on that cell while the guard is still airborne, the guard captures the
-// arriving king instead of being captured itself. The king is destroyed
-// (removed from its origin) and the game ends; the guard is left untouched,
-// exactly as if it never moved.
+// Characterization test: a king arriving on a cell guarded by a still-airborne enemy is destroyed (game ends) while the guard, never having moved, is left untouched.
 TEST_CASE("a king arriving on a cell guarded by a still-airborne enemy piece is destroyed and ends the game") {
     GameEngine engine(Parser::parse_board({ "wK bR" }));
     engine.request_jump(Position{ 1, 0 }); // bR at (1,0) jumps, guarding its cell for kJumpDurationMs
@@ -94,9 +89,7 @@ TEST_CASE("a king arriving on a cell guarded by a still-airborne enemy piece is 
     CHECK(board_of(engine) == ". bR\n"); // king destroyed; guard untouched on its cell
 }
 
-// Characterization test: a normal capture-on-arrival and an airborne-guard
-// capture resolving within the same wait() call are independent of each
-// other — settling one does not skip or short-circuit the other.
+// Characterization test: a normal capture-on-arrival and an airborne-guard capture resolving within the same wait() call are independent — settling one doesn't skip or short-circuit the other.
 TEST_CASE("a normal capture and an airborne-guard capture settle independently within the same wait") {
     GameEngine engine(Parser::parse_board({ "wR bN . wQ bQ" }));
     engine.request_jump(Position{ 4, 0 }); // bQ at (4,0) jumps, guarding its cell

@@ -10,10 +10,7 @@ constexpr int kEscapeKey = 27;
 
 OpenCvInputSource::OpenCvInputSource(std::string window_name)
     : window_name_(std::move(window_name)) {
-    // cv::setMouseCallback only attaches if the window already exists;
-    // create it up front so the callback is guaranteed to register here
-    // rather than depending on Renderer::draw() having run first. Renderer's
-    // later cv::imshow() calls on the same name reuse this window.
+    // Created up front so the mouse callback is guaranteed to attach here, not left to Renderer::draw()'s later cv::imshow() on the same name.
     cv::namedWindow(window_name_);
     cv::setMouseCallback(window_name_, &OpenCvInputSource::on_mouse, this);
 }
@@ -35,8 +32,7 @@ std::optional<std::pair<int, int>> OpenCvInputSource::poll_click() {
 }
 
 bool OpenCvInputSource::poll_quit() {
-    // Required every frame or the window appears frozen: OpenCV only
-    // pumps its window/mouse event queue while a wait function is running.
+    // Required every frame or the window appears frozen: OpenCV only pumps its event queue during a wait call.
     int key = cv::waitKey(1);
     if (key == kEscapeKey) {
         return true;

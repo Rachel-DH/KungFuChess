@@ -6,9 +6,7 @@
 
 namespace {
 
-// Locates `"key"` in `text`, then returns the offset of the first
-// non-whitespace character after its colon. Throws naming `key` if the key
-// is missing, has no colon, or has no value.
+// Locates `"key"` in `text`, then returns the offset of the first non-whitespace character after its colon; throws naming `key` if it's missing, has no colon, or has no value.
 std::size_t value_start_after_key(const std::string& text, const std::string& key) {
     std::string needle = "\"" + key + "\"";
     std::size_t key_pos = text.find(needle);

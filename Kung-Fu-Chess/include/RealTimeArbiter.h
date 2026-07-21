@@ -6,9 +6,7 @@
 #include "Board.h"
 #include "Position.h"
 
-// SRP: owns real-time move/jump scheduling and the simulated clock over a
-// bound Board, separate from GameEngine's move-legality concerns. Reports
-// king captures back to the caller rather than deciding game-over itself.
+// SRP: owns real-time move/jump scheduling and the simulated clock over a bound Board; reports king captures back to the caller rather than deciding game-over itself.
 class RealTimeArbiter {
 public:
     RealTimeArbiter(Board& board, long long move_ms_per_cell);
@@ -18,18 +16,15 @@ public:
 
     bool is_airborne(int x, int y) const { return airborne_at(x, y) != nullptr; }
 
-    // Called whenever the piece on (x, y) is replaced, so airborne state
-    // never outlives the piece it describes.
+    // Called whenever the piece on (x, y) is replaced, so airborne state never outlives the piece it describes.
     void drop_airborne_at(int x, int y);
 
     void schedule_move(Position start, Position dest, Cell piece);
 
-    // Guards `cell` for jump_duration_ms: an enemy move that arrives there
-    // during the window is captured by the jumper instead of capturing it.
+    // Guards `cell` for jump_duration_ms: an enemy move that arrives there during the window is captured by the jumper instead of capturing it.
     void start_jump(Position cell, Cell piece, long long jump_duration_ms);
 
-    // Advances the clock and settles arrived moves/jumps. Returns true if
-    // an enemy king was captured while settling.
+    // Advances the clock and settles arrived moves/jumps; returns true if an enemy king was captured while settling.
     bool advance(int milliseconds);
 
     long long clock_ms() const { return clock_ms_; }
@@ -37,9 +32,7 @@ public:
     // True if any piece has a pending move that hasn't arrived, or is currently airborne.
     bool has_activity() const { return !pending_moves_.empty() || !airborne_.empty(); }
 
-    // True if the given move's route would share a cell with a pending
-    // move's route. Whichever move was scheduled first keeps its claim; a
-    // later, colliding move is rejected outright.
+    // True if the given move's route would share a cell with a pending move's route; whichever move was scheduled first keeps its claim, and a later, colliding move is rejected outright.
     bool conflicts_with_pending_move(int start_x, int start_y, int dest_x, int dest_y) const;
 
 private:
@@ -50,10 +43,7 @@ private:
         long long arrival_ms;
     };
 
-    // A piece mid-jump. It stays on `cell` on the board for the whole jump
-    // (no special handling needed elsewhere); this is just a time-windowed
-    // status overlay carrying `land_ms`, kept in sync so it never outlives
-    // the piece it describes.
+    // A piece mid-jump; stays on `cell` on the board for the whole jump, this is just a time-windowed status overlay carrying `land_ms`, kept in sync so it never outlives the piece it describes.
     struct AirbornePiece {
         Position cell;
         Cell piece;

@@ -8,9 +8,7 @@ namespace {
         return a > b ? a - b : b - a;
     }
 
-    // Every cell a piece passes through from start to dest, inclusive. For a
-    // non-straight, non-diagonal offset (e.g. a knight's L-shape), nothing
-    // lies in between, so the path is just the two endpoints.
+    // Every cell a piece passes through from start to dest, inclusive; a non-straight, non-diagonal offset (e.g. a knight's L-shape) has nothing between, so the path is just the two endpoints.
     std::vector<Position> path_cells(int start_x, int start_y, int dest_x, int dest_y) {
         int dx = abs_diff(start_x, dest_x);
         int dy = abs_diff(start_y, dest_y);
@@ -83,8 +81,7 @@ bool RealTimeArbiter::conflicts_with_pending_move(int start_x, int start_y, int 
     return false;
 }
 
-// Travel time is proportional to Chebyshev distance (diagonals cost the
-// same as straight moves).
+// Travel time is proportional to Chebyshev distance (diagonals cost the same as straight moves).
 long long RealTimeArbiter::arrival_time_for(int start_x, int start_y, int dest_x, int dest_y) const {
     int distance_cells = std::max(abs_diff(start_x, dest_x), abs_diff(start_y, dest_y));
     return clock_ms_ + static_cast<long long>(distance_cells) * move_ms_per_cell_;
@@ -133,9 +130,7 @@ bool RealTimeArbiter::settle_arrived_moves() {
             continue;
         }
 
-        // An airborne enemy on the destination captures the arriving piece
-        // instead of being captured: clear the mover's origin and skip
-        // placing it; the jumper stays untouched since it never left its cell.
+        // An airborne enemy on the destination captures the arriving piece instead of being captured: clear the mover's origin and skip placing it; the jumper stays untouched.
         const AirbornePiece* guard = airborne_at(move.dest.x, move.dest.y);
         if (guard != nullptr && guard->piece.color != move.piece.color
             && move.arrival_ms <= guard->land_ms) {
@@ -153,8 +148,7 @@ bool RealTimeArbiter::settle_arrived_moves() {
         if (is_pawn_promotion(move)) {
             piece.type = PieceType::Q;
         }
-        // Drop any stale airborne record for the destination piece we're
-        // about to overwrite.
+        // Drop any stale airborne record for the destination piece we're about to overwrite.
         drop_airborne_at(move.dest.x, move.dest.y);
         board_.place_at(move.dest.x, move.dest.y, piece);
         board_.clear_at(move.start.x, move.start.y);
