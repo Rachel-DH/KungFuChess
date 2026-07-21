@@ -25,5 +25,9 @@ private:
     int cell_width_;
     int cell_height_;
 
+    // Loaded once at construction; the board image never changes mid-game, so draw()
+    // clones from this instead of re-reading and decoding it from disk every frame.
+    Img board_image_;
+
     SpriteManager sprite_manager_;
 };

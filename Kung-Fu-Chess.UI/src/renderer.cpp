@@ -11,11 +11,11 @@ Renderer::Renderer(std::string board_path, std::string pieces_dir,
       cell_height_(cell_height),
       sprite_manager_(std::move(pieces_dir), cell_width, cell_height)
 {
+    board_image_.read(board_path_, board_size_, false);
 }
 
 void Renderer::draw(const RenderSnapshot& snapshot, int elapsed_ms) {
-    Img board;
-    board.read(board_path_, board_size_, false);
+    Img board = board_image_.clone();
 
     std::vector<int> live_ids;
     live_ids.reserve(snapshot.pieces.size());
