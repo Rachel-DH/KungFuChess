@@ -59,8 +59,7 @@ std::string Parser::token_from_cell(const std::optional<Cell>& cell) {
     return token;
 }
 
-// Parses board text into a Board: blank lines are skipped, and every
-// non-blank row must tokenize to the same width as the first one.
+// Parses board text into a Board: blank lines are skipped, and every non-blank row must tokenize to the same width as the first one.
 Board Parser::parse_board(const std::vector<std::string>& lines) {
     std::vector<std::vector<std::string>> rows;
     size_t width = 0;

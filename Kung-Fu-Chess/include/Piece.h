@@ -2,22 +2,19 @@
 
 #include "Board.h"
 
-// Strategy pattern: each piece type implements its own movement rule behind
-// this common interface, so callers never branch on piece type.
+// Strategy pattern: each piece type implements its own movement rule behind this common interface, so callers never branch on piece type.
 class Piece {
 public:
     virtual ~Piece() = default;
 
-    // True if this piece can legally move from start to dest: shape, path,
-    // and same-color capture are all satisfied.
+    // True if this piece can legally move from start to dest: shape, path, and same-color capture are all satisfied.
     virtual bool is_available_move(int start_x, int start_y, int dest_x, int dest_y, const Board& board) const = 0;
 
     // True if another piece blocks the path between start and dest.
     virtual bool has_blockers(int start_x, int start_y, int dest_x, int dest_y, const Board& board) const = 0;
 
 protected:
-    // Shared tail once a subclass has confirmed the move fits its shape:
-    // rejects a blocked path, then rejects capturing one's own color.
+    // Shared tail once a subclass has confirmed the move fits its shape: rejects a blocked path, then rejects capturing one's own color.
     bool legal_if_shape_matches(int start_x, int start_y, int dest_x, int dest_y, const Board& board) const;
 };
 
