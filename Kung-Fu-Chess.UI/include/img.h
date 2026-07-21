@@ -29,6 +29,10 @@ public:
     // Displays the image in its own window.
     void show();
 
+    // Returns a deep copy of this image; mutating the copy (e.g. via draw_on) never
+    // affects the original, unlike a plain copy which would share the underlying cv::Mat.
+    Img clone() const;
+
     // Returns the underlying OpenCV Mat.
     const cv::Mat& get_mat() const { return img; }
 

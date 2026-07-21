@@ -206,6 +206,22 @@ TEST_CASE("after a click selects one piece, only that piece's is_selected is tru
     }
 }
 
+TEST_CASE("every piece's is_selected is false when Controller has no active selection") {
+    Controller controller(Parser::parse_board({ "wR . bK" }));
+    REQUIRE_FALSE(controller.has_selection());
+
+    FakeInputSource input;
+    FakeRenderer renderer;
+    RenderLoop loop(controller, renderer, input);
+
+    loop.tick(0);
+
+    REQUIRE(renderer.last_snapshot.pieces.size() == 2);
+    for (const PieceRenderState& piece : renderer.last_snapshot.pieces) {
+        CHECK_FALSE(piece.is_selected);
+    }
+}
+
 TEST_CASE("the very first tick after construction always draws, even on a fully idle board") {
     Controller controller(Parser::parse_board({ "wR . ." }));
     FakeInputSource input;
