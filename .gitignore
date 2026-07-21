@@ -370,3 +370,6 @@ tools/
 
 # Locally vendored third-party libraries (e.g. OpenCV Windows package)
 deps/
+
+# Generated architecture docs
+docs/

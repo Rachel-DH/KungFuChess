@@ -42,6 +42,13 @@ Img &Img::read(const std::string &path,
     return *this;
 }
 
+Img Img::clone() const
+{
+    Img copy;
+    copy.img = img.clone();
+    return copy;
+}
+
 void Img::draw_on(Img &other_img, int x, int y)
 {
     if (img.empty() || other_img.img.empty())

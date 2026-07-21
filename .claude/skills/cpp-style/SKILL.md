@@ -49,9 +49,20 @@ Concise, clear, debuggable. No cleverness for its own sake.
 - **`#include` order**: own header → blank → `<std>` headers → blank → project headers.
   File-local helpers go in an anonymous `namespace { ... } // namespace`.
 
-## Part C — Comments
+## Part C — Parameter Passing
+
+- **By value** — for small, cheap-to-copy types: `int`, `bool`, `double`, `enum`s, pointers, and small structs (e.g. a `{int, int}` position). Copying these is cheaper than the indirection of a reference.
+- **By `const&`** — for large or expensive-to-copy types you only need to read: `std::string`, `std::vector`, `std::map`, or any non-trivial struct/class. Avoids an unnecessary copy on every call.
+- **By `&` (non-const)** — only when the function needs to mutate the caller's variable in place. Rare in modern C++; prefer returning a new value (RVO/NRVO makes this free) over an output parameter.
+- **By value + `std::move`** — when the function will store or take ownership of the value regardless. Take the parameter by value, then `std::move` it into the member/field. This lets the caller choose: pass an rvalue/`std::move`d value for a zero-copy transfer, or pass an lvalue and pay for exactly one copy — never more.
+
+> **Rule of thumb:** if `sizeof(type)` is roughly ≤ 2 pointers (16 bytes on 64-bit) and it owns no heap resource → pass by value. Otherwise → `const&`, unless the callee is going to store it, in which case → value + `std::move`.
+
+## Part D — Comments
 
 `//` line comments only (no `/* */`, no Doxygen). Comment the **why / contract**, not a
 line-by-line narration. Every public method gets a short contract comment (behavior +
 edge cases). Add an inline note only to justify a non-obvious line
 (`// white moves up (-y), black moves down (+y)`).
+
+
