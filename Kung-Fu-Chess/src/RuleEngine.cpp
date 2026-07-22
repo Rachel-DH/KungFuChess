@@ -25,3 +25,36 @@ bool RuleEngine::is_path_clear(int start_x, int start_y, int dest_x, int dest_y,
     }
     return true;
 }
+
+// private ---------------------------------------------------------------
+
+bool RuleEngine::captures_enemy_king(const PendingMove& move, const Board& board) {
+    std::optional<Cell> target = board.get_at(move.dest.x, move.dest.y);
+    return target.has_value() && target->type == PieceType::K && target->color != move.piece.color;
+}
+
+// Farthest row is row 0 for white (which moves up toward lower indices),
+// the last row for black.
+bool RuleEngine::is_pawn_promotion(const PendingMove& move, const Board& board) {
+    if (move.piece.type != PieceType::P) {
+        return false;
+    }
+    int last_row = (move.piece.color == Color::w) ? 0 : board.get_height() - 1;
+    return move.dest.y == last_row;
+}
+
+// public ----------------------------------------------------------------
+
+bool RuleEngine::settle_move(const PendingMove& move, Board& board) {
+    bool king_captured = captures_enemy_king(move, board);
+
+    Cell piece = move.piece;
+    if (is_pawn_promotion(move, board)) {
+        piece.type = PieceType::Q;
+    }
+
+    board.place_at(move.dest.x, move.dest.y, piece);
+    board.clear_at(move.start.x, move.start.y);
+
+    return king_captured;
+}

@@ -1,12 +1,15 @@
 #pragma once
 
-#include <optional>
 #include <vector>
 
 #include "Board.h"
 #include "Position.h"
+#include "RuleEngine.h"
 
-// SRP: owns real-time move/jump scheduling and the simulated clock over a bound Board; reports king captures back to the caller rather than deciding game-over itself.
+// SRP: owns real-time move/jump scheduling and the simulated clock over a
+// bound Board; reports king captures back to the caller rather than deciding
+// game-over itself.  Has no knowledge of chess rules — all board-mutation
+// logic is delegated to RuleEngine::settle_move.
 class RealTimeArbiter {
 public:
     RealTimeArbiter(long long move_ms_per_cell);
@@ -24,7 +27,8 @@ public:
     // Guards `cell` for jump_duration_ms: an enemy move that arrives there during the window is captured by the jumper instead of capturing it.
     void start_jump(Position cell, Cell piece, long long jump_duration_ms);
 
-    // Advances the clock and settles arrived moves/jumps; returns true if an enemy king was captured while settling.
+    // Advances the clock and settles arrived moves/jumps; returns true if an
+    // enemy king was captured while settling.  Chess rules are applied via
     bool advance(int milliseconds, Board& board);
 
     long long clock_ms() const { return clock_ms_; }
@@ -36,14 +40,9 @@ public:
     bool conflicts_with_pending_move(int start_x, int start_y, int dest_x, int dest_y) const;
 
 private:
-    struct PendingMove {
-        Position start;
-        Position dest;
-        Cell piece;
-        long long arrival_ms;
-    };
-
-    // A piece mid-jump; stays on `cell` on the board for the whole jump, this is just a time-windowed status overlay carrying `land_ms`, kept in sync so it never outlives the piece it describes.
+    // A piece mid-jump; stays on `cell` on the board for the whole jump, this
+    // is just a time-windowed status overlay carrying `land_ms`, kept in sync
+    // so it never outlives the piece it describes.
     struct AirbornePiece {
         Position cell;
         Cell piece;
@@ -58,11 +57,6 @@ private:
     const AirbornePiece* airborne_at(int x, int y) const;
 
     long long arrival_time_for(int start_x, int start_y, int dest_x, int dest_y) const;
-
-    bool captures_enemy_king(const PendingMove& move, Board& board) const;
-
-    // True if `move`'s piece is a pawn reaching the farthest row (promotion).
-    bool is_pawn_promotion(const PendingMove& move, Board& board) const;
 
     bool settle_arrived_moves(Board& board);
 };
