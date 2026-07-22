@@ -9,7 +9,7 @@
 // SRP: owns real-time move/jump scheduling and the simulated clock over a bound Board; reports king captures back to the caller rather than deciding game-over itself.
 class RealTimeArbiter {
 public:
-    RealTimeArbiter(Board& board, long long move_ms_per_cell);
+    RealTimeArbiter(long long move_ms_per_cell);
 
     // True if the piece at (x, y) has a pending move that hasn't arrived yet.
     bool is_moving(int x, int y) const;
@@ -25,7 +25,7 @@ public:
     void start_jump(Position cell, Cell piece, long long jump_duration_ms);
 
     // Advances the clock and settles arrived moves/jumps; returns true if an enemy king was captured while settling.
-    bool advance(int milliseconds);
+    bool advance(int milliseconds, Board& board);
 
     long long clock_ms() const { return clock_ms_; }
 
@@ -50,7 +50,6 @@ private:
         long long land_ms;
     };
 
-    Board& board_;
     long long move_ms_per_cell_;
     long long clock_ms_ = 0;
     std::vector<PendingMove> pending_moves_;
@@ -60,10 +59,10 @@ private:
 
     long long arrival_time_for(int start_x, int start_y, int dest_x, int dest_y) const;
 
-    bool captures_enemy_king(const PendingMove& move) const;
+    bool captures_enemy_king(const PendingMove& move, Board& board) const;
 
     // True if `move`'s piece is a pawn reaching the farthest row (promotion).
-    bool is_pawn_promotion(const PendingMove& move) const;
+    bool is_pawn_promotion(const PendingMove& move, Board& board) const;
 
-    bool settle_arrived_moves();
+    bool settle_arrived_moves(Board& board);
 };

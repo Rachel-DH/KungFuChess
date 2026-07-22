@@ -18,7 +18,7 @@ namespace {
 } // namespace
 
 GameEngine::GameEngine(Board board, long long move_ms_per_cell)
-    : board_(std::move(board)), arbiter_(board_, move_ms_per_cell) {
+    : board_(std::move(board)), arbiter_(move_ms_per_cell) {
 }
 
 Board GameEngine::standard_start_board() {
@@ -103,7 +103,7 @@ bool GameEngine::request_jump(Position cell) {
 
 // Ends the game if an enemy king was captured while settling.
 void GameEngine::wait(int milliseconds) {
-    if (milliseconds > 0 && arbiter_.advance(milliseconds)) {
+    if (milliseconds > 0 && arbiter_.advance(milliseconds, board_)) {
         state_ = GameState::GameOver;
     }
 }

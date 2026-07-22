@@ -34,8 +34,8 @@ namespace {
 
 } // namespace
 
-RealTimeArbiter::RealTimeArbiter(Board& board, long long move_ms_per_cell)
-    : board_(board), move_ms_per_cell_(move_ms_per_cell) {
+RealTimeArbiter::RealTimeArbiter(long long move_ms_per_cell)
+    : move_ms_per_cell_(move_ms_per_cell) {
 }
 
 bool RealTimeArbiter::is_moving(int x, int y) const {
@@ -87,21 +87,21 @@ long long RealTimeArbiter::arrival_time_for(int start_x, int start_y, int dest_x
     return clock_ms_ + static_cast<long long>(distance_cells) * move_ms_per_cell_;
 }
 
-bool RealTimeArbiter::captures_enemy_king(const PendingMove& move) const {
-    std::optional<Cell> target = board_.get_at(move.dest.x, move.dest.y);
+bool RealTimeArbiter::captures_enemy_king(const PendingMove& move, Board& board) const {
+    std::optional<Cell> target = board.get_at(move.dest.x, move.dest.y);
     return target.has_value() && target->type == PieceType::K && target->color != move.piece.color;
 }
 
 // Farthest row is row 0 for white (which moves up), the last row for black.
-bool RealTimeArbiter::is_pawn_promotion(const PendingMove& move) const {
+bool RealTimeArbiter::is_pawn_promotion(const PendingMove& move, Board& board) const {
     if (move.piece.type != PieceType::P) {
         return false;
     }
-    int last_row = (move.piece.color == Color::w) ? 0 : board_.get_height() - 1;
+    int last_row = (move.piece.color == Color::w) ? 0 : board.get_height() - 1;
     return move.dest.y == last_row;
 }
 
-bool RealTimeArbiter::settle_arrived_moves() {
+bool RealTimeArbiter::settle_arrived_moves(Board& board) {
     // Fast path: nothing to settle this tick, so skip rebuilding either vector.
     bool any_move_arrived = false;
     for (const PendingMove& move : pending_moves_) {
@@ -134,24 +134,24 @@ bool RealTimeArbiter::settle_arrived_moves() {
         const AirbornePiece* guard = airborne_at(move.dest.x, move.dest.y);
         if (guard != nullptr && guard->piece.color != move.piece.color
             && move.arrival_ms <= guard->land_ms) {
-            board_.clear_at(move.start.x, move.start.y);
+            board.clear_at(move.start.x, move.start.y);
             if (move.piece.type == PieceType::K) {
                 king_captured = true;
             }
             continue;
         }
 
-        if (captures_enemy_king(move)) {
+        if (captures_enemy_king(move, board)) {
             king_captured = true;
         }
         Cell piece = move.piece;
-        if (is_pawn_promotion(move)) {
+        if (is_pawn_promotion(move, board)) {
             piece.type = PieceType::Q;
         }
         // Drop any stale airborne record for the destination piece we're about to overwrite.
         drop_airborne_at(move.dest.x, move.dest.y);
-        board_.place_at(move.dest.x, move.dest.y, piece);
-        board_.clear_at(move.start.x, move.start.y);
+        board.place_at(move.dest.x, move.dest.y, piece);
+        board.clear_at(move.start.x, move.start.y);
     }
 
     pending_moves_ = std::move(still_pending);
@@ -180,10 +180,10 @@ void RealTimeArbiter::start_jump(Position cell, Cell piece, long long jump_durat
     airborne_.push_back(AirbornePiece{ cell, piece, clock_ms_ + jump_duration_ms });
 }
 
-bool RealTimeArbiter::advance(int milliseconds) {
+bool RealTimeArbiter::advance(int milliseconds, Board& board) {
     if (milliseconds <= 0) {
         return false;
     }
     clock_ms_ += milliseconds;
-    return settle_arrived_moves();
+    return settle_arrived_moves(board);
 }
