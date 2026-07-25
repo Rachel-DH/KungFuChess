@@ -53,8 +53,10 @@ bool RuleEngine::settle_move(const PendingMove& move, Board& board) {
         piece.type = PieceType::Q;
     }
 
+    // The piece was already placed on dest step-by-step during transit.
+    // Re-write the cell only to apply any type change (e.g. pawn promotion).
+    // Do NOT clear move.start — transit vacated the origin long ago.
     board.place_at(move.dest.x, move.dest.y, piece);
-    board.clear_at(move.start.x, move.start.y);
 
     return king_captured;
 }
