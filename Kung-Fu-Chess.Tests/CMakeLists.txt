@@ -11,6 +11,7 @@ add_executable(Kung-Fu-Chess.Tests
     src/GameEngine/HasActivityTests.cpp
     src/GameEngine/JumpTests.cpp
     src/GameEngine/PromotionTests.cpp
+    src/GameEngine/RestTests.cpp
     src/GameEngine/WaitTests.cpp
     src/GameEngine/PrintTests.cpp
     src/Piece/KingTests.cpp
