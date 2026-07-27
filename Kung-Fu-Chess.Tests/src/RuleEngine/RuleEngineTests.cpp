@@ -32,6 +32,36 @@ TEST_CASE("an empty start cell is not a self-capture") {
 
 }
 
+TEST_SUITE("RuleEngine::is_blocked_by_friendly") {
+
+TEST_CASE("a same-color piece on next blocks the move") {
+    Board board(2, 1);
+    board.place_at(0, 0, Cell{ Color::w, PieceType::R });
+    board.place_at(1, 0, Cell{ Color::w, PieceType::N });
+    CHECK(RuleEngine::is_blocked_by_friendly(Position{ 0, 0 }, Position{ 1, 0 }, board));
+}
+
+TEST_CASE("an opposite-color piece on next does not block the move") {
+    Board board(2, 1);
+    board.place_at(0, 0, Cell{ Color::w, PieceType::R });
+    board.place_at(1, 0, Cell{ Color::b, PieceType::N });
+    CHECK_FALSE(RuleEngine::is_blocked_by_friendly(Position{ 0, 0 }, Position{ 1, 0 }, board));
+}
+
+TEST_CASE("an empty next cell does not block the move") {
+    Board board(2, 1);
+    board.place_at(0, 0, Cell{ Color::w, PieceType::R });
+    CHECK_FALSE(RuleEngine::is_blocked_by_friendly(Position{ 0, 0 }, Position{ 1, 0 }, board));
+}
+
+TEST_CASE("an empty current cell does not block the move") {
+    Board board(2, 1);
+    board.place_at(1, 0, Cell{ Color::w, PieceType::N });
+    CHECK_FALSE(RuleEngine::is_blocked_by_friendly(Position{ 0, 0 }, Position{ 1, 0 }, board));
+}
+
+}
+
 TEST_SUITE("RuleEngine::is_path_clear") {
 
 TEST_CASE("an unobstructed straight path is clear") {
