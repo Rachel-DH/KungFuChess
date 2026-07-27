@@ -79,10 +79,6 @@ bool GameEngine::request_move(Position start, Position dest) {
         return false;
     }
 
-    if (arbiter_.conflicts_with_pending_move(start.x, start.y, dest.x, dest.y)) {
-        return false;
-    }
-
     arbiter_.schedule_move(start, dest, *piece_at_start);
     return true;
 }

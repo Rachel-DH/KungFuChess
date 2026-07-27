@@ -54,9 +54,11 @@ immediately. This one adds a live clock:
 - Every move takes `distance_in_cells × move_ms_per_cell` milliseconds
   to arrive (default 1000ms per cell).
 - While a move is in flight, that piece can't be reselected or redirected.
-- A new move is rejected if its path overlaps a move that's already
-  travelling (`RealTimeArbiter::conflicts_with_pending_move`) — so two
-  pieces can't be scheduled through the same cells at once.
+- A piece already in flight or airborne can't be rescheduled
+  (`GameEngine::request_move`'s `is_moving`/`is_airborne` checks); same-color
+  path collisions stop the mover one cell short at step time
+  (`RuleEngine::is_blocked_by_friendly`), and different-color collisions
+  resolve via in-place capture.
 - A piece can `jump` in place for a fixed window (1000ms). While
   airborne it can't be captured or moved — but if an enemy piece's move
   arrives on that cell during the jump, the jumper captures *it* instead.
@@ -107,8 +109,7 @@ The clock and scheduler. Owns two lists:
 
 Key members: `clock_ms_` (current simulated time), `move_ms_per_cell_`
 (travel speed). Key methods: `schedule_move`, `start_jump`,
-`advance(ms)` (ticks the clock and settles anything that has arrived),
-`conflicts_with_pending_move` (collision check described above).
+`advance(ms)` (ticks the clock and settles anything that has arrived).
 `settle_arrived_moves()` is the private method that actually mutates
 the `Board` when a move lands — including pawn promotion and the
 airborne-capture special case.

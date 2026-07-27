@@ -21,6 +21,7 @@ add_executable(Kung-Fu-Chess.Tests
     src/Piece/PawnTests.cpp
     src/Piece/PieceFactoryTests.cpp
     src/RuleEngine/RuleEngineTests.cpp
+    src/RealTimeArbiter/RealTimeArbiterTests.cpp
     src/Controller/ControllerTests.cpp
     src/CommandProcessor/CommandProcessorTests.cpp
     src/ProtocolIO/ProtocolIOTests.cpp
