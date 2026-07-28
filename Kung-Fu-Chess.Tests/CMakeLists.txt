@@ -28,6 +28,7 @@ add_executable(Kung-Fu-Chess.Tests
     src/ProtocolIO/ProtocolIOTests.cpp
     src/RenderLoop/RenderLoopTests.cpp
     src/CommandDispatcher/CommandDispatcherTests.cpp
+    src/WireFormat/WireFormatTests.cpp
     src/AnimationStateConfig/AnimationStateConfigTests.cpp
     src/SpriteAnimation/SpriteAnimationTests.cpp
     src/PieceAnimationConfigProvider/PieceAnimationConfigProviderTests.cpp
@@ -55,6 +56,8 @@ target_include_directories(Kung-Fu-Chess.Tests PRIVATE
     ${KFC_ENGINE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/include
 )
+
+target_link_libraries(Kung-Fu-Chess.Tests PRIVATE Kung-Fu-Chess.Net)
 
 target_compile_definitions(Kung-Fu-Chess.Tests PRIVATE
     KFC_TEST_FIXTURES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures"

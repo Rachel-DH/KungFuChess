@@ -24,5 +24,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(Kung-Fu-Chess.UI)
+add_subdirectory(Kung-Fu-Chess.Net)
 add_subdirectory(Kung-Fu-Chess)
 add_subdirectory(Kung-Fu-Chess.Tests)
