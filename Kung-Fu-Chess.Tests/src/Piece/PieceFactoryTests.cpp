@@ -1,7 +1,7 @@
 #include "ThirdParty/doctest.h"
 
-#include "Board.h"
-#include "Piece.h"
+#include "model/Board.h"
+#include "model/Piece.h"
 
 TEST_SUITE("PieceFactory::get_piece") {
 

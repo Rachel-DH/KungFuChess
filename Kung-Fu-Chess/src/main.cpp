@@ -2,10 +2,10 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "Controller.h"
-#include "InputSourceFactory.h"
-#include "RenderLoop.h"
-#include "RendererFactory.h"
+#include "control/Controller.h"
+#include "input/InputSourceFactory.h"
+#include "rendering/RenderLoop.h"
+#include "rendering/RendererFactory.h"
 
 int main() {
     try {

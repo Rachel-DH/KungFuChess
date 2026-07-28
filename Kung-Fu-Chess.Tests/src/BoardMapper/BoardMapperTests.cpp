@@ -1,14 +1,13 @@
 #include "ThirdParty/doctest.h"
 
-#include "BoardMapper.h"
-#include "Constants.h"
+#include "control/BoardMapper.h"
 
 TEST_SUITE("BoardMapper") {
 
 TEST_CASE("a pixel maps to the cell containing it") {
     std::optional<Position> cell = BoardMapper::pixel_to_cell(
-        constants::kCellSizePx + constants::kCellSizePx / 2,
-        2 * constants::kCellSizePx + constants::kCellSizePx / 2,
+        BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2,
+        2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2,
         8, 8); // -> cell (1, 2)
     REQUIRE(cell.has_value());
     CHECK(cell->x == 1);
@@ -16,14 +15,14 @@ TEST_CASE("a pixel maps to the cell containing it") {
 }
 
 TEST_CASE("a pixel exactly on a cell boundary maps to the next cell") {
-    std::optional<Position> cell = BoardMapper::pixel_to_cell(constants::kCellSizePx, 0, 8, 8);
+    std::optional<Position> cell = BoardMapper::pixel_to_cell(BoardMapper::CELL_SIZE_PX, 0, 8, 8);
     REQUIRE(cell.has_value());
     CHECK(cell->x == 1);
     CHECK(cell->y == 0);
 }
 
 TEST_CASE("a pixel one short of a cell boundary stays in the previous cell") {
-    std::optional<Position> cell = BoardMapper::pixel_to_cell(constants::kCellSizePx - 1, 0, 8, 8);
+    std::optional<Position> cell = BoardMapper::pixel_to_cell(BoardMapper::CELL_SIZE_PX - 1, 0, 8, 8);
     REQUIRE(cell.has_value());
     CHECK(cell->x == 0);
     CHECK(cell->y == 0);
@@ -35,8 +34,8 @@ TEST_CASE("a negative pixel coordinate is out of bounds") {
 }
 
 TEST_CASE("a pixel at or beyond the board's far edge is out of bounds") {
-    CHECK_FALSE(BoardMapper::pixel_to_cell(8 * constants::kCellSizePx, 0, 8, 8).has_value());
-    CHECK_FALSE(BoardMapper::pixel_to_cell(0, 8 * constants::kCellSizePx, 8, 8).has_value());
+    CHECK_FALSE(BoardMapper::pixel_to_cell(8 * BoardMapper::CELL_SIZE_PX, 0, 8, 8).has_value());
+    CHECK_FALSE(BoardMapper::pixel_to_cell(0, 8 * BoardMapper::CELL_SIZE_PX, 8, 8).has_value());
 }
 
 TEST_CASE("a degenerate 0x0 board has no valid cells") {

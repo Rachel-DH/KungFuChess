@@ -1,6 +1,6 @@
 #include "ThirdParty/doctest.h"
 
-#include "sprite_animation.h"
+#include "animation/sprite_animation.h"
 
 TEST_SUITE("SpriteAnimation::advance") {
     TEST_CASE("a fresh animation starts at frame 0") {

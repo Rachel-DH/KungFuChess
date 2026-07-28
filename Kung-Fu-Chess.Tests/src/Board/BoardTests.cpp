@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "Board.h"
+#include "model/Board.h"
 
 TEST_SUITE("Board") {
 

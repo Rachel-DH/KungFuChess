@@ -1,6 +1,6 @@
 #include "ThirdParty/doctest.h"
 
-#include "animation_state_config.h"
+#include "animation/animation_state_config.h"
 
 TEST_SUITE("AnimationStateConfig::parse") {
     TEST_CASE("a real idle config parses correctly") {

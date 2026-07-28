@@ -1,6 +1,6 @@
 #include "ThirdParty/doctest.h"
 
-#include "piece_animation_config_provider.h"
+#include "animation/piece_animation_config_provider.h"
 
 namespace {
 

@@ -1,7 +1,7 @@
 #include "ThirdParty/doctest.h"
 
-#include "GameEngine.h"
-#include "Parser.h"
+#include "model/GameEngine.h"
+#include "input/Parser.h"
 
 TEST_SUITE("GameEngine::has_activity") {
 
@@ -20,7 +20,7 @@ TEST_CASE("activity clears once the move settles") {
     GameEngine engine(Parser::parse_board({ "wK ." }));
     CHECK(engine.request_move(Position{ 0, 0 }, Position{ 1, 0 }));
 
-    engine.wait(GameEngine::kDefaultMoveMsPerCell);
+    engine.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL);
     CHECK_FALSE(engine.has_activity());
 }
 
@@ -34,7 +34,7 @@ TEST_CASE("activity clears once the jump lands") {
     GameEngine engine(Parser::parse_board({ "wK" }));
     CHECK(engine.request_jump(Position{ 0, 0 }));
 
-    engine.wait(GameEngine::kJumpDurationMs);
+    engine.wait(GameEngine::JUMP_DURATION_MS);
     CHECK_FALSE(engine.has_activity());
 }
 

@@ -30,22 +30,22 @@ add_executable(Kung-Fu-Chess.Tests
     src/AnimationStateConfig/AnimationStateConfigTests.cpp
     src/SpriteAnimation/SpriteAnimationTests.cpp
     src/PieceAnimationConfigProvider/PieceAnimationConfigProviderTests.cpp
-    ${KFC_ENGINE_DIR}/src/Board.cpp
-    ${KFC_ENGINE_DIR}/src/Parser.cpp
-    ${KFC_ENGINE_DIR}/src/GameEngine.cpp
-    ${KFC_ENGINE_DIR}/src/Piece.cpp
-    ${KFC_ENGINE_DIR}/src/RuleEngine.cpp
-    ${KFC_ENGINE_DIR}/src/RealTimeArbiter.cpp
-    ${KFC_ENGINE_DIR}/src/BoardMapper.cpp
-    ${KFC_ENGINE_DIR}/src/Controller.cpp
-    ${KFC_ENGINE_DIR}/src/CommandProcessor.cpp
-    ${KFC_ENGINE_DIR}/src/ProtocolIO.cpp
-    ${KFC_ENGINE_DIR}/src/RenderLoop.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation_state_config.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/sprite_animation.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/piece_animation_config_provider.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/piece_naming.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/asset_path.cpp
+    ${KFC_ENGINE_DIR}/src/model/Board.cpp
+    ${KFC_ENGINE_DIR}/src/input/Parser.cpp
+    ${KFC_ENGINE_DIR}/src/model/GameEngine.cpp
+    ${KFC_ENGINE_DIR}/src/model/Piece.cpp
+    ${KFC_ENGINE_DIR}/src/model/RuleEngine.cpp
+    ${KFC_ENGINE_DIR}/src/control/RealTimeArbiter.cpp
+    ${KFC_ENGINE_DIR}/src/control/BoardMapper.cpp
+    ${KFC_ENGINE_DIR}/src/control/Controller.cpp
+    ${KFC_ENGINE_DIR}/src/input/CommandProcessor.cpp
+    ${KFC_ENGINE_DIR}/src/input/ProtocolIO.cpp
+    ${KFC_ENGINE_DIR}/src/rendering/RenderLoop.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/animation_state_config.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/sprite_animation.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/piece_animation_config_provider.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/piece_naming.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/assets/asset_path.cpp
 )
 
 target_include_directories(Kung-Fu-Chess.Tests PRIVATE

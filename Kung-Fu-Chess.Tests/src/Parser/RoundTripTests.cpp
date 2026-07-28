@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-#include "Board.h"
-#include "Parser.h"
+#include "model/Board.h"
+#include "input/Parser.h"
 
 namespace {
 
