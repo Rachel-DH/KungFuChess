@@ -123,7 +123,21 @@ private:
         }
         GameRoom& room = games_.get_or_create(msg.room_name);
         ensure_subscribed(room);
-        room.join(*player_id);
+        send_join_result(connection_id, room.join(*player_id));
+    }
+
+    // The client learns its assigned color exactly once, at join time (§3);
+    // ViewModel is constructed from this and never re-derives it.
+    static std::string join_result_json(const JoinResult& result) {
+        std::string role = result.role == PlayerRole::Opponent ? "opponent" : "spectator";
+        std::string color_field = result.color.has_value()
+            ? R"(,"color":")" + std::string(*result.color == Color::w ? "w" : "b") + "\""
+            : "";
+        return R"({"type":"join_room_result","role":")" + role + "\"" + color_field + "}";
+    }
+
+    void send_join_result(int connection_id, const JoinResult& result) {
+        server_.send_text(connection_id, join_result_json(result));
     }
 
     void handle(int connection_id, const QuickMatchMessage&) {
@@ -138,6 +152,13 @@ private:
         if (room_id.has_value()) {
             if (GameRoom* room = games_.find(*room_id)) {
                 ensure_subscribed(*room);
+                // Both the requester and the opponent who was already
+                // waiting need their assigned color — Matchmaker only hands
+                // back the room id, so read both slots straight off the room.
+                for (const auto& member_id : room->all_players()) {
+                    JoinResult result{ PlayerRole::Opponent, room->color_of_player(member_id) };
+                    connections_.send_to_player(member_id, join_result_json(result));
+                }
             }
         }
         // No match yet: player_id is queued in the Matchmaker; §5's "no
