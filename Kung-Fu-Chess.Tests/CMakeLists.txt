@@ -40,6 +40,7 @@ add_executable(Kung-Fu-Chess.Tests
     src/SqliteUserRepository/SqliteUserRepositoryTests.cpp
     src/Base64/Base64Tests.cpp
     src/WebSocketFrame/WebSocketFrameTests.cpp
+    src/WebSocketServer/WebSocketServerTests.cpp
     src/AnimationStateConfig/AnimationStateConfigTests.cpp
     src/SpriteAnimation/SpriteAnimationTests.cpp
     src/PieceAnimationConfigProvider/PieceAnimationConfigProviderTests.cpp

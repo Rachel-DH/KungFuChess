@@ -6,8 +6,12 @@
                 "${workspaceFolder}/Kung-Fu-Chess/include",
                 "${workspaceFolder}/Kung-Fu-Chess.Tests/include",
                 "${workspaceFolder}/Kung-Fu-Chess.UI/include",
-                "${workspaceFolder}/deps/opencv/build/include",
-                "${workspaceFolder}/tools/vcpkg/installed/x64-windows/include"
+                "${workspaceFolder}/Kung-Fu-Chess.Net/include",
+                "${workspaceFolder}/Kung-Fu-Chess.Net/include/ThirdParty",
+                "${workspaceFolder}/Kung-Fu-Chess.Server/include",
+                "${workspaceFolder}/Kung-Fu-Chess.Server/include/ThirdParty",
+                "${workspaceFolder}/Kung-Fu-Chess.Server/include/ThirdParty/sqlite",
+                "${workspaceFolder}/deps/opencv/build/include"
             ],
             "defines": [
                 "_DEBUG",
