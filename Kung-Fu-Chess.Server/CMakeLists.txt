@@ -11,6 +11,7 @@ add_library(Kung-Fu-Chess.Server STATIC
     src/PasswordHasher.cpp
     src/InMemoryUserRepository.cpp
     src/SqliteUserRepository.cpp
+    src/ConnectionManager.cpp
     src/ThirdParty/sha256.c
     src/ThirdParty/sqlite3.c
 )
