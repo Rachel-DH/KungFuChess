@@ -48,6 +48,9 @@ public:
     // Starts a jump in place at `cell` for JUMP_DURATION_MS; false if the game is over, there's no piece there, or it's already moving/airborne.
     bool request_jump(Position cell);
 
+    // Ends the game immediately regardless of board state (e.g. resignation); a no-op if already over.
+    void force_game_over() { state_ = GameState::GameOver; }
+
     // Advances the game clock and settles any pending moves whose arrival time has now passed.
     void wait(int milliseconds);
 

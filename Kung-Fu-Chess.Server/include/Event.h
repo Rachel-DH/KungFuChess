@@ -15,6 +15,8 @@ struct CaptureEvent {
     Color captured_color;
 };
 
+// Published for any game-ending result — king capture, resignation, or a
+// disconnect-timeout forfeit — not literal checkmate (this variant has none).
 struct CheckmateEvent {
     Color losing_color;
 };

@@ -8,6 +8,7 @@ add_executable(Kung-Fu-Chess.Tests
     src/Parser/BoardToStringTests.cpp
     src/Parser/RoundTripTests.cpp
     src/GameEngine/GameOverTests.cpp
+    src/GameEngine/ForceGameOverTests.cpp
     src/GameEngine/HasActivityTests.cpp
     src/GameEngine/JumpTests.cpp
     src/GameEngine/PromotionTests.cpp
@@ -31,6 +32,8 @@ add_executable(Kung-Fu-Chess.Tests
     src/WireFormat/WireFormatTests.cpp
     src/EventBus/EventBusTests.cpp
     src/RatingManager/RatingManagerTests.cpp
+    src/GameRoom/GameRoomTests.cpp
+    src/GameManager/GameManagerTests.cpp
     src/AnimationStateConfig/AnimationStateConfigTests.cpp
     src/SpriteAnimation/SpriteAnimationTests.cpp
     src/PieceAnimationConfigProvider/PieceAnimationConfigProviderTests.cpp
