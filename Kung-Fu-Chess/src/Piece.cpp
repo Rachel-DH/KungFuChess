@@ -110,9 +110,9 @@ bool Knight::is_available_move(int start_x, int start_y, int dest_x, int dest_y,
 
 namespace {
 
-// A pawn's home row, from which it may open with a two-cell move: white's own edge is the last row of the board, black's is the first.
+// A pawn's home row, from which it may open with a two-cell move: white pawns start one row from the bottom, black pawns one row from the top.
 int pawn_start_row(Color color, const Board& board) {
-    return color == Color::w ? board.get_height() - 1 : 0;
+    return color == Color::w ? board.get_height() - 2 : 1;
 }
 
 } // namespace

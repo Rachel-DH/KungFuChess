@@ -17,8 +17,8 @@ namespace {
 
 } // namespace
 
-GameEngine::GameEngine(Board board, long long move_ms_per_cell)
-    : board_(std::move(board)), arbiter_(board_, move_ms_per_cell) {
+GameEngine::GameEngine(Board board, long long move_ms_per_cell, long long rest_duration_ms)
+    : board_(std::move(board)), arbiter_(move_ms_per_cell, rest_duration_ms) {
 }
 
 Board GameEngine::standard_start_board() {
@@ -43,7 +43,8 @@ bool GameEngine::is_selectable(Position cell) const {
         return false;
     }
     std::optional<Cell> piece = board_.get_at(cell.x, cell.y);
-    return piece.has_value() && !arbiter_.is_moving(cell.x, cell.y) && !arbiter_.is_airborne(cell.x, cell.y);
+    return piece.has_value() && !arbiter_.is_moving(cell.x, cell.y) && !arbiter_.is_airborne(cell.x, cell.y) &&
+        !arbiter_.is_resting(cell.x, cell.y);
 }
 
 std::optional<Color> GameEngine::color_at(Position cell) const {
@@ -74,12 +75,13 @@ bool GameEngine::request_move(Position start, Position dest) {
         return false;
     }
 
-    const Piece* piece = PieceFactory::get_piece(piece_at_start->type);
-    if (!piece || !piece->is_available_move(start.x, start.y, dest.x, dest.y, board_)) {
+    // A piece that just settled a move is resting; it cannot move again until the window ends.
+    if (arbiter_.is_resting(start.x, start.y)) {
         return false;
     }
 
-    if (arbiter_.conflicts_with_pending_move(start.x, start.y, dest.x, dest.y)) {
+    const Piece* piece = PieceFactory::get_piece(piece_at_start->type);
+    if (!piece || !piece->is_available_move(start.x, start.y, dest.x, dest.y, board_)) {
         return false;
     }
 
@@ -103,7 +105,7 @@ bool GameEngine::request_jump(Position cell) {
 
 // Ends the game if an enemy king was captured while settling.
 void GameEngine::wait(int milliseconds) {
-    if (milliseconds > 0 && arbiter_.advance(milliseconds)) {
+    if (milliseconds > 0 && arbiter_.advance(milliseconds, board_)) {
         state_ = GameState::GameOver;
     }
 }
