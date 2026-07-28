@@ -27,6 +27,7 @@ add_executable(Kung-Fu-Chess.Tests
     src/CommandProcessor/CommandProcessorTests.cpp
     src/ProtocolIO/ProtocolIOTests.cpp
     src/RenderLoop/RenderLoopTests.cpp
+    src/CommandDispatcher/CommandDispatcherTests.cpp
     src/AnimationStateConfig/AnimationStateConfigTests.cpp
     src/SpriteAnimation/SpriteAnimationTests.cpp
     src/PieceAnimationConfigProvider/PieceAnimationConfigProviderTests.cpp
@@ -41,6 +42,7 @@ add_executable(Kung-Fu-Chess.Tests
     ${KFC_ENGINE_DIR}/src/input/CommandProcessor.cpp
     ${KFC_ENGINE_DIR}/src/input/ProtocolIO.cpp
     ${KFC_ENGINE_DIR}/src/rendering/RenderLoop.cpp
+    ${KFC_ENGINE_DIR}/src/net/CommandDispatcher.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/animation_state_config.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/sprite_animation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/piece_animation_config_provider.cpp

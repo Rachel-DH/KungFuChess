@@ -11,6 +11,7 @@ add_executable(Kung-Fu-Chess
     src/input/CommandProcessor.cpp
     src/input/ProtocolIO.cpp
     src/rendering/RenderLoop.cpp
+    src/net/CommandDispatcher.cpp
 )
 
 target_include_directories(Kung-Fu-Chess PRIVATE include)
