@@ -23,9 +23,18 @@ project(KungFuChess CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(Kung-Fu-Chess.UI)
+# Kung-Fu-Chess.UI's find_package(OpenCV ... REQUIRED) fails at configure
+# time, not build time, if OpenCV isn't present — so building just the
+# engine/networking/server/tests needs this off, not just left unbuilt.
+option(KFC_BUILD_UI "Build the OpenCV-based windowed UI and its Kung-Fu-Chess executable (requires vendored OpenCV)" ON)
+
+if(KFC_BUILD_UI)
+    add_subdirectory(Kung-Fu-Chess.UI)
+endif()
 add_subdirectory(Kung-Fu-Chess.Net)
 add_subdirectory(Kung-Fu-Chess.Server)
 add_subdirectory(Kung-Fu-Chess.Client)
-add_subdirectory(Kung-Fu-Chess)
+if(KFC_BUILD_UI)
+    add_subdirectory(Kung-Fu-Chess)
+endif()
 add_subdirectory(Kung-Fu-Chess.Tests)
