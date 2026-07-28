@@ -1,6 +1,6 @@
 #include "ThirdParty/doctest.h"
 
-#include "RuleEngine.h"
+#include "model/RuleEngine.h"
 
 TEST_SUITE("RuleEngine::captures_own_color") {
 

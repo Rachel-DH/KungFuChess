@@ -38,7 +38,7 @@ directly. The doctest header is vendored at
 ```cpp
 #include "ThirdParty/doctest.h"
 
-#include "GameEngine.h"
+#include "model/GameEngine.h"
 
 namespace {
     std::string board_of(GameEngine& engine) { /* capture print() */ }

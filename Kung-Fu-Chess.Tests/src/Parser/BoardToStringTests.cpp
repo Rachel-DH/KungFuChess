@@ -1,7 +1,7 @@
 #include "ThirdParty/doctest.h"
 
-#include "Board.h"
-#include "Parser.h"
+#include "model/Board.h"
+#include "input/Parser.h"
 
 TEST_SUITE("Parser::board_to_string") {
 

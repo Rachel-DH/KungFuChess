@@ -1,7 +1,7 @@
 #include "ThirdParty/doctest.h"
 
-#include "Board.h"
-#include "RealTimeArbiter.h"
+#include "model/Board.h"
+#include "control/RealTimeArbiter.h"
 
 namespace {
 

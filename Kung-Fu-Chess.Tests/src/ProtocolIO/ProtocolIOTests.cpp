@@ -3,10 +3,10 @@
 #include <sstream>
 #include <string>
 
-#include "CommandProcessor.h"
-#include "Controller.h"
-#include "Parser.h"
-#include "ProtocolIO.h"
+#include "input/CommandProcessor.h"
+#include "control/Controller.h"
+#include "input/Parser.h"
+#include "input/ProtocolIO.h"
 
 namespace {
 

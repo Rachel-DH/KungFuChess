@@ -4,14 +4,13 @@
 #include <utility>
 #include <vector>
 
-#include "BoardMapper.h"
-#include "Constants.h"
-#include "Controller.h"
-#include "GameEngine.h"
-#include "IInputSource.h"
-#include "IRenderer.h"
-#include "Parser.h"
-#include "RenderLoop.h"
+#include "control/BoardMapper.h"
+#include "control/Controller.h"
+#include "model/GameEngine.h"
+#include "input/IInputSource.h"
+#include "rendering/IRenderer.h"
+#include "input/Parser.h"
+#include "rendering/RenderLoop.h"
 
 namespace {
 
@@ -57,7 +56,7 @@ public:
 
 // Finds the render state at `cell`'s pixel position, if any occupies it.
 std::optional<PieceRenderState> state_at(const std::vector<PieceRenderState>& pieces, Position cell) {
-    PixelPosition pixel = BoardMapper::cell_to_pixel(cell, constants::kCellSizePx, constants::kCellSizePx);
+    PixelPosition pixel = BoardMapper::cell_to_pixel(cell, BoardMapper::CELL_SIZE_PX, BoardMapper::CELL_SIZE_PX);
     for (const auto& piece : pieces) {
         if (piece.pixel_position.x == pixel.x && piece.pixel_position.y == pixel.y) {
             return piece;
@@ -91,9 +90,9 @@ TEST_CASE("no pending click still advances the clock and draws exactly once, wit
     FakeRenderer renderer;
     RenderLoop loop(controller, renderer, input);
 
-    CHECK(loop.tick(GameEngine::kDefaultMoveMsPerCell));
+    CHECK(loop.tick(GameEngine::DEFAULT_MOVE_MS_PER_CELL));
     CHECK(renderer.draw_count == 1);
-    CHECK(renderer.last_elapsed_ms == GameEngine::kDefaultMoveMsPerCell);
+    CHECK(renderer.last_elapsed_ms == GameEngine::DEFAULT_MOVE_MS_PER_CELL);
 
     std::optional<PieceRenderState> arrived = state_at(renderer.last_snapshot.pieces, Position{ 1, 0 });
     REQUIRE(arrived.has_value());
@@ -125,7 +124,7 @@ TEST_CASE("the clock advances before the click is applied, so a piece landing ex
     FakeRenderer renderer;
     RenderLoop loop(controller, renderer, input);
 
-    loop.tick(GameEngine::kDefaultMoveMsPerCell);
+    loop.tick(GameEngine::DEFAULT_MOVE_MS_PER_CELL);
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 1);
     CHECK(controller.selected()->y == 0);
@@ -133,14 +132,14 @@ TEST_CASE("the clock advances before the click is applied, so a piece landing ex
 
 TEST_CASE("tick reports stop the instant wait ends the game, but still draws the final frame once") {
     Controller controller(Parser::parse_board({ "wR . bK" }));
-    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                             // select wR at (0,0)
-    controller.click(2 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // move across to (2,0), capturing bK; 2 cells of travel time
+    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                             // select wR at (0,0)
+    controller.click(2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // move across to (2,0), capturing bK; 2 cells of travel time
 
     FakeInputSource input;
     FakeRenderer renderer;
     RenderLoop loop(controller, renderer, input);
 
-    CHECK_FALSE(loop.tick(2 * GameEngine::kDefaultMoveMsPerCell));
+    CHECK_FALSE(loop.tick(2 * GameEngine::DEFAULT_MOVE_MS_PER_CELL));
     CHECK(renderer.draw_count == 1);
 }
 
@@ -158,7 +157,7 @@ TEST_CASE("a piece at logical (0,0) is drawn at pixel (0,0)") {
     CHECK(wr->pixel_position.y == 0);
 }
 
-TEST_CASE("a piece at logical (1,0) is drawn at pixel (kCellSizePx,0)") {
+TEST_CASE("a piece at logical (1,0) is drawn at pixel (CELL_SIZE_PX,0)") {
     Controller controller(Parser::parse_board({ ". wR ." }));
     FakeInputSource input;
     FakeRenderer renderer;
@@ -168,7 +167,7 @@ TEST_CASE("a piece at logical (1,0) is drawn at pixel (kCellSizePx,0)") {
 
     std::optional<PieceRenderState> wr = state_at(renderer.last_snapshot.pieces, Position{ 1, 0 });
     REQUIRE(wr.has_value());
-    CHECK(wr->pixel_position.x == constants::kCellSizePx);
+    CHECK(wr->pixel_position.x == BoardMapper::CELL_SIZE_PX);
     CHECK(wr->pixel_position.y == 0);
 }
 
@@ -271,8 +270,8 @@ TEST_CASE("an idle board with a looping animation redraws only on ticks where ad
 
 TEST_CASE("a scheduled move draws every tick while in flight, then stops once it settles back to idle") {
     Controller controller(Parser::parse_board({ "wR . . . ." }));
-    controller.click(constants::kCellSizePx / 2, constants::kCellSizePx / 2);                              // select wR at (0,0)
-    controller.click(4 * constants::kCellSizePx + constants::kCellSizePx / 2, constants::kCellSizePx / 2); // move to (4,0); 4 cells of travel time
+    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                              // select wR at (0,0)
+    controller.click(4 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // move to (4,0); 4 cells of travel time
     REQUIRE(controller.has_activity());
 
     FakeInputSource input;
@@ -280,7 +279,7 @@ TEST_CASE("a scheduled move draws every tick while in flight, then stops once it
     RenderLoop loop(controller, renderer, input);
 
     for (int step = 0; step < 4; ++step) {
-        CHECK(loop.tick(static_cast<int>(GameEngine::kDefaultMoveMsPerCell)));
+        CHECK(loop.tick(static_cast<int>(GameEngine::DEFAULT_MOVE_MS_PER_CELL)));
     }
     CHECK(renderer.draw_count == 4); // one draw per in-flight tick, including the tick it settles on
     CHECK_FALSE(controller.has_activity());

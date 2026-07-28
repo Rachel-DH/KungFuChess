@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-#include "GameEngine.h"
-#include "Parser.h"
+#include "model/GameEngine.h"
+#include "input/Parser.h"
 
 TEST_SUITE("GameEngine::wait") {
 
@@ -44,8 +44,8 @@ TEST_CASE("a move does not settle on the board until wait reaches its arrival ti
     GameEngine engine(Parser::parse_board({ "wK ." }));
     CHECK(engine.request_move(Position{ 0, 0 }, Position{ 1, 0 })); // one cell of travel time is needed
 
-    engine.wait(GameEngine::kDefaultMoveMsPerCell - 1);
-    CHECK(engine.clock_ms() == GameEngine::kDefaultMoveMsPerCell - 1);
+    engine.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL - 1);
+    CHECK(engine.clock_ms() == GameEngine::DEFAULT_MOVE_MS_PER_CELL - 1);
 
     std::ostringstream still_at_start;
     engine.print(still_at_start);

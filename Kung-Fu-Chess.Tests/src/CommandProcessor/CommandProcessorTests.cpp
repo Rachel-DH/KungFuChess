@@ -3,10 +3,10 @@
 #include <sstream>
 #include <string>
 
-#include "CommandProcessor.h"
-#include "Controller.h"
-#include "GameEngine.h"
-#include "Parser.h"
+#include "input/CommandProcessor.h"
+#include "control/Controller.h"
+#include "model/GameEngine.h"
+#include "input/Parser.h"
 
 namespace {
 
@@ -59,7 +59,7 @@ TEST_CASE("a wait line dispatches to Controller::wait and settles an in-flight m
     processor.run_line("click 50 50");  // select bR at (0,0)
     processor.run_line("click 50 150"); // move down to (0,1)
 
-    processor.run_line("wait " + std::to_string(GameEngine::kDefaultMoveMsPerCell));
+    processor.run_line("wait " + std::to_string(GameEngine::DEFAULT_MOVE_MS_PER_CELL));
     CHECK(board_of(controller) == ". bN .\nbR . .\nwR . wN\n");
 }
 
