@@ -67,6 +67,9 @@ public:
     bool has_player(const std::string& player_id) const;
     std::vector<std::string> all_players() const;
 
+    std::optional<std::string> white_player_id() const { return white_player_; }
+    std::optional<std::string> black_player_id() const { return black_player_; }
+
 private:
     struct DisconnectTimer {
         std::string player_id;
