@@ -35,6 +35,9 @@ add_executable(Kung-Fu-Chess.Tests
     src/GameRoom/GameRoomTests.cpp
     src/GameManager/GameManagerTests.cpp
     src/Matchmaker/MatchmakerTests.cpp
+    src/PasswordHasher/PasswordHasherTests.cpp
+    src/InMemoryUserRepository/InMemoryUserRepositoryTests.cpp
+    src/SqliteUserRepository/SqliteUserRepositoryTests.cpp
     src/AnimationStateConfig/AnimationStateConfigTests.cpp
     src/SpriteAnimation/SpriteAnimationTests.cpp
     src/PieceAnimationConfigProvider/PieceAnimationConfigProviderTests.cpp
