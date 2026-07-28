@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "ClientMessage.h"
 #include "net/Command.h"
 
 // Isolated JSON <-> Command boundary (§4.1 of docs/architecture_plan.md).
@@ -22,5 +23,10 @@ public:
 //   {"type":"jump","cell":{"x":3,"y":3}}
 // Throws WireFormatError on anything malformed or an unrecognized "type".
 Command command_from_json(const std::string& json_text);
+
+// Parses any inbound message: MOVE/JUMP (as command_from_json) plus session
+// actions — REGISTER, LOGIN, JOIN_ROOM, QUICK_MATCH, RESIGN — recognized by
+// "type". Throws WireFormatError on anything malformed or unrecognized.
+ClientMessage client_message_from_json(const std::string& json_text);
 
 } // namespace WireFormat

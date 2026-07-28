@@ -42,6 +42,7 @@ add_executable(Kung-Fu-Chess.Tests
     src/WebSocketFrame/WebSocketFrameTests.cpp
     src/WebSocketServer/WebSocketServerTests.cpp
     src/ConnectionManager/ConnectionManagerTests.cpp
+    src/GameStateSerializer/GameStateSerializerTests.cpp
     src/AnimationStateConfig/AnimationStateConfigTests.cpp
     src/SpriteAnimation/SpriteAnimationTests.cpp
     src/PieceAnimationConfigProvider/PieceAnimationConfigProviderTests.cpp
