@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "GameRoom.h"
 
@@ -19,6 +20,13 @@ public:
     void remove(const std::string& room_id);
 
     std::size_t room_count() const { return rooms_.size(); }
+
+    // Every room id currently registered — the server main loop's tick
+    // iterates this every frame (§4.3: "for each room: room.tick(dt)").
+    std::vector<std::string> room_ids() const;
+
+    // nullptr if player_id isn't an opponent or spectator in any room.
+    GameRoom* find_room_for_player(const std::string& player_id);
 
 private:
     std::unordered_map<std::string, std::unique_ptr<GameRoom>> rooms_;

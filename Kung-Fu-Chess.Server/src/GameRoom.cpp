@@ -61,6 +61,23 @@ void GameRoom::resign(const std::string& player_id) {
     event_bus_.publish(CheckmateEvent{ *resigning_color });
 }
 
+bool GameRoom::has_player(const std::string& player_id) const {
+    return color_of(player_id).has_value()
+        || std::find(spectators_.begin(), spectators_.end(), player_id) != spectators_.end();
+}
+
+std::vector<std::string> GameRoom::all_players() const {
+    std::vector<std::string> players;
+    if (white_player_.has_value()) {
+        players.push_back(*white_player_);
+    }
+    if (black_player_.has_value()) {
+        players.push_back(*black_player_);
+    }
+    players.insert(players.end(), spectators_.begin(), spectators_.end());
+    return players;
+}
+
 std::optional<Color> GameRoom::tick(long long elapsed_ms) {
     for (auto& timer : disconnect_timers_) {
         timer.remaining_ms -= elapsed_ms;

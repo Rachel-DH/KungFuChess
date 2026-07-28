@@ -57,6 +57,16 @@ public:
     // color that just timed out and lost, if any (at most one per tick).
     std::optional<Color> tick(long long elapsed_ms);
 
+    // nullopt for a spectator or a player_id that holds no slot at all — the
+    // server main loop's anti-cheat gate (§4.1) rejects a MOVE/JUMP whose
+    // sender isn't the color of the piece at the command's source cell.
+    std::optional<Color> color_of_player(const std::string& player_id) const { return color_of(player_id); }
+
+    // True for either opponent or a spectator — every connection this room's
+    // GAME_STATE broadcast (§4.1, §4.4) needs to reach.
+    bool has_player(const std::string& player_id) const;
+    std::vector<std::string> all_players() const;
+
 private:
     struct DisconnectTimer {
         std::string player_id;

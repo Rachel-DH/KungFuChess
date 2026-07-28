@@ -16,3 +16,21 @@ GameRoom* GameManager::find(const std::string& room_id) {
 void GameManager::remove(const std::string& room_id) {
     rooms_.erase(room_id);
 }
+
+std::vector<std::string> GameManager::room_ids() const {
+    std::vector<std::string> ids;
+    ids.reserve(rooms_.size());
+    for (const auto& [id, room] : rooms_) {
+        ids.push_back(id);
+    }
+    return ids;
+}
+
+GameRoom* GameManager::find_room_for_player(const std::string& player_id) {
+    for (auto& [id, room] : rooms_) {
+        if (room->has_player(player_id)) {
+            return room.get();
+        }
+    }
+    return nullptr;
+}

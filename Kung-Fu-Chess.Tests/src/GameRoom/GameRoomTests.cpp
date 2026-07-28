@@ -115,3 +115,41 @@ TEST_CASE("a spectator cannot resign") {
 }
 
 }
+
+TEST_SUITE("GameRoom::has_player / all_players / color_of_player") {
+
+TEST_CASE("has_player is true for opponents and spectators alike") {
+    GameRoom room("room-1");
+    room.join("alice");
+    room.join("bob");
+    room.join("carol");
+
+    CHECK(room.has_player("alice"));
+    CHECK(room.has_player("carol"));
+    CHECK_FALSE(room.has_player("nobody"));
+}
+
+TEST_CASE("all_players lists both opponents and every spectator") {
+    GameRoom room("room-1");
+    room.join("alice");
+    room.join("bob");
+    room.join("carol");
+
+    auto players = room.all_players();
+    CHECK(players.size() == 3);
+}
+
+TEST_CASE("color_of_player reports each opponent's assigned color and nullopt for a spectator") {
+    GameRoom room("room-1");
+    room.join("alice");
+    room.join("bob");
+    room.join("carol");
+
+    REQUIRE(room.color_of_player("alice").has_value());
+    CHECK(*room.color_of_player("alice") == Color::w);
+    REQUIRE(room.color_of_player("bob").has_value());
+    CHECK(*room.color_of_player("bob") == Color::b);
+    CHECK_FALSE(room.color_of_player("carol").has_value());
+}
+
+}

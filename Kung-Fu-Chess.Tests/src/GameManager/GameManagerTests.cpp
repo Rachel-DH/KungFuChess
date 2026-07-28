@@ -1,5 +1,7 @@
 #include "ThirdParty/doctest.h"
 
+#include <algorithm>
+
 #include "GameManager.h"
 
 TEST_SUITE("GameManager::get_or_create") {
@@ -47,6 +49,52 @@ TEST_CASE("removing a room makes it findable no longer") {
     manager.remove("room-1");
     CHECK(manager.find("room-1") == nullptr);
     CHECK(manager.room_count() == 0);
+}
+
+}
+
+TEST_SUITE("GameManager::room_ids") {
+
+TEST_CASE("lists every currently-registered room id") {
+    GameManager manager;
+    manager.get_or_create("room-1");
+    manager.get_or_create("room-2");
+
+    auto ids = manager.room_ids();
+    CHECK(ids.size() == 2);
+    CHECK(std::find(ids.begin(), ids.end(), "room-1") != ids.end());
+    CHECK(std::find(ids.begin(), ids.end(), "room-2") != ids.end());
+}
+
+}
+
+TEST_SUITE("GameManager::find_room_for_player") {
+
+TEST_CASE("finds the room a player holds an opponent slot in") {
+    GameManager manager;
+    manager.get_or_create("room-1").join("alice");
+
+    GameRoom* room = manager.find_room_for_player("alice");
+    REQUIRE(room != nullptr);
+    CHECK(room->id() == "room-1");
+}
+
+TEST_CASE("finds the room a player is spectating") {
+    GameManager manager;
+    GameRoom& room = manager.get_or_create("room-1");
+    room.join("alice");
+    room.join("bob");
+    room.join("carol"); // spectator
+
+    GameRoom* found = manager.find_room_for_player("carol");
+    REQUIRE(found != nullptr);
+    CHECK(found->id() == "room-1");
+}
+
+TEST_CASE("returns nullptr for a player in no room") {
+    GameManager manager;
+    manager.get_or_create("room-1").join("alice");
+    CHECK(manager.find_room_for_player("nobody") == nullptr);
 }
 
 }
