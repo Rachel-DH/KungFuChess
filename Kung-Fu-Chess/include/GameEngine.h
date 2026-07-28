@@ -34,8 +34,10 @@ class GameEngine
 public:
     static constexpr long long kDefaultMoveMsPerCell = constants::kDefaultMoveMsPerCell;
     static constexpr long long kJumpDurationMs = constants::kJumpDurationMs;
+    static constexpr long long kDefaultRestDurationMs = constants::kDefaultRestDurationMs;
 
-    explicit GameEngine(Board board, long long move_ms_per_cell = kDefaultMoveMsPerCell);
+    explicit GameEngine(Board board, long long move_ms_per_cell = kDefaultMoveMsPerCell,
+        long long rest_duration_ms = kDefaultRestDurationMs);
 
     // Fully-constructed GameEngine on the standard 8x8 chess starting position.
     static GameEngine standard_start(long long move_ms_per_cell = kDefaultMoveMsPerCell);
@@ -43,7 +45,7 @@ public:
     // The Board for the standard starting position, without wrapping it in a GameEngine — for callers that build their own engine and must never see GameEngine directly.
     static Board standard_start_board();
 
-    // Validates the move against the piece's own rule and any move already in flight on its route, then queues it via RealTimeArbiter; false if illegal, game over, no piece at `start`, or already moving/airborne.
+    // Validates the move against the piece's own rule and any move already in flight on its route, then queues it via RealTimeArbiter; false if illegal, game over, no piece at `start`, or already moving/airborne/resting.
     bool request_move(Position start, Position dest);
 
     // Starts a jump in place at `cell` for kJumpDurationMs; false if the game is over, there's no piece there, or it's already moving/airborne.
@@ -63,7 +65,7 @@ public:
     int width() const { return board_.get_width(); }
     int height() const { return board_.get_height(); }
 
-    // True if `cell` holds a piece that can be selected: present, neither mid-move nor mid-jump, and the game is not already over.
+    // True if `cell` holds a piece that can be selected: present, neither mid-move, mid-jump, nor resting, and the game is not already over.
     bool is_selectable(Position cell) const;
 
     std::optional<Color> color_at(Position cell) const;

@@ -29,8 +29,8 @@ Position next_cell_toward(Position current, Position dest) {
 // Construction
 // ---------------------------------------------------------------------------
 
-RealTimeArbiter::RealTimeArbiter(long long move_ms_per_cell)
-    : move_ms_per_cell_(move_ms_per_cell) {
+RealTimeArbiter::RealTimeArbiter(long long move_ms_per_cell, long long rest_duration_ms)
+    : move_ms_per_cell_(move_ms_per_cell), rest_duration_ms_(rest_duration_ms) {
 }
 
 // ---------------------------------------------------------------------------
@@ -53,6 +53,15 @@ const RealTimeArbiter::AirbornePiece* RealTimeArbiter::airborne_at(int x, int y)
         }
     }
     return nullptr;
+}
+
+bool RealTimeArbiter::is_resting(int x, int y) const {
+    for (const RestingPiece& r : resting_) {
+        if (r.cell == Position{ x, y }) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -103,6 +112,7 @@ bool RealTimeArbiter::advance(int milliseconds, Board& board) {
     }
 
     remove_completed_moves(board);
+    expire_resting();
 
     return king_captured;
 }
@@ -229,7 +239,26 @@ void RealTimeArbiter::remove_completed_moves(Board& board) {
                     return false; // still travelling
                 }
                 RuleEngine::settle_move(move, board);
+                start_resting(move.dest);
                 return true;
             }),
         pending_moves_.end());
+}
+
+// Discards any pre-existing record for cell first, then starts a fresh
+// window from now — a capturing piece must get its own full rest window,
+// never the shorter remainder of the piece it just captured.
+void RealTimeArbiter::start_resting(Position cell) {
+    resting_.erase(
+        std::remove_if(resting_.begin(), resting_.end(),
+            [cell](const RestingPiece& r) { return r.cell == cell; }),
+        resting_.end());
+    resting_.push_back(RestingPiece{ cell, clock_ms_ + rest_duration_ms_ });
+}
+
+void RealTimeArbiter::expire_resting() {
+    resting_.erase(
+        std::remove_if(resting_.begin(), resting_.end(),
+            [this](const RestingPiece& r) { return r.rest_until_ms <= clock_ms_; }),
+        resting_.end());
 }

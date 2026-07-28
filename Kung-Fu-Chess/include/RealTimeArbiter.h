@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "Board.h"
+#include "Constants.h"
 #include "Position.h"
 #include "RuleEngine.h"
 
@@ -18,12 +19,16 @@
 // destination are settled via RuleEngine (pawn promotion) and removed.
 class RealTimeArbiter {
 public:
-    explicit RealTimeArbiter(long long move_ms_per_cell);
+    explicit RealTimeArbiter(long long move_ms_per_cell,
+        long long rest_duration_ms = constants::kDefaultRestDurationMs);
 
     // True if a pending move currently occupies (x, y).
     bool is_moving(int x, int y) const;
 
     bool is_airborne(int x, int y) const { return airborne_at(x, y) != nullptr; }
+
+    // True if a piece settled at (x, y) is still within its post-move rest window.
+    bool is_resting(int x, int y) const;
 
     // Removes the airborne record for (x, y) so it never outlives the piece it describes.
     void drop_airborne_at(int x, int y);
@@ -43,7 +48,9 @@ public:
 
     long long clock_ms() const { return clock_ms_; }
 
-    bool has_activity() const { return !pending_moves_.empty() || !airborne_.empty(); }
+    bool has_activity() const {
+        return !pending_moves_.empty() || !airborne_.empty() || !resting_.empty();
+    }
 
 private:
     struct AirbornePiece {
@@ -52,12 +59,27 @@ private:
         long long land_ms;
     };
 
+    struct RestingPiece {
+        Position cell;
+        long long rest_until_ms;
+    };
+
     long long move_ms_per_cell_;
+    long long rest_duration_ms_;
     long long clock_ms_ = 0;
     std::vector<PendingMove> pending_moves_;
     std::vector<AirbornePiece> airborne_;
+    std::vector<RestingPiece> resting_;
 
     const AirbornePiece* airborne_at(int x, int y) const;
+
+    // Starts (or restarts) cell's rest window from now, discarding any
+    // pre-existing record for it first so a capturing piece always gets its
+    // own fresh window rather than inheriting the victim's.
+    void start_resting(Position cell);
+
+    // Removes every resting record whose window has closed.
+    void expire_resting();
 
     long long arrival_time_for(int start_x, int start_y, int dest_x, int dest_y) const;
 

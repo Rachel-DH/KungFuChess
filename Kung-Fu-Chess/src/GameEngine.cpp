@@ -17,8 +17,8 @@ namespace {
 
 } // namespace
 
-GameEngine::GameEngine(Board board, long long move_ms_per_cell)
-    : board_(std::move(board)), arbiter_(move_ms_per_cell) {
+GameEngine::GameEngine(Board board, long long move_ms_per_cell, long long rest_duration_ms)
+    : board_(std::move(board)), arbiter_(move_ms_per_cell, rest_duration_ms) {
 }
 
 Board GameEngine::standard_start_board() {
@@ -43,7 +43,8 @@ bool GameEngine::is_selectable(Position cell) const {
         return false;
     }
     std::optional<Cell> piece = board_.get_at(cell.x, cell.y);
-    return piece.has_value() && !arbiter_.is_moving(cell.x, cell.y) && !arbiter_.is_airborne(cell.x, cell.y);
+    return piece.has_value() && !arbiter_.is_moving(cell.x, cell.y) && !arbiter_.is_airborne(cell.x, cell.y) &&
+        !arbiter_.is_resting(cell.x, cell.y);
 }
 
 std::optional<Color> GameEngine::color_at(Position cell) const {
@@ -71,6 +72,11 @@ bool GameEngine::request_move(Position start, Position dest) {
 
     // An airborne piece is committed to its jump; it cannot move until it lands.
     if (arbiter_.is_airborne(start.x, start.y)) {
+        return false;
+    }
+
+    // A piece that just settled a move is resting; it cannot move again until the window ends.
+    if (arbiter_.is_resting(start.x, start.y)) {
         return false;
     }
 
