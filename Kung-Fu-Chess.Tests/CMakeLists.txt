@@ -38,6 +38,8 @@ add_executable(Kung-Fu-Chess.Tests
     src/PasswordHasher/PasswordHasherTests.cpp
     src/InMemoryUserRepository/InMemoryUserRepositoryTests.cpp
     src/SqliteUserRepository/SqliteUserRepositoryTests.cpp
+    src/Base64/Base64Tests.cpp
+    src/WebSocketFrame/WebSocketFrameTests.cpp
     src/AnimationStateConfig/AnimationStateConfigTests.cpp
     src/SpriteAnimation/SpriteAnimationTests.cpp
     src/PieceAnimationConfigProvider/PieceAnimationConfigProviderTests.cpp
