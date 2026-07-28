@@ -5,6 +5,7 @@ add_library(Kung-Fu-Chess.Server STATIC
     src/RatingManager.cpp
     src/GameRoom.cpp
     src/GameManager.cpp
+    src/Matchmaker.cpp
 )
 
 target_include_directories(Kung-Fu-Chess.Server PUBLIC
