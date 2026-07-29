@@ -52,7 +52,7 @@ TEST_CASE("print is unaffected by an in-progress Controller selection with no mo
     controller.print(before_stream);
     std::string before = before_stream.str();
 
-    controller.click(50, 50); // select wK, no move requested
+    controller.click(Position{ 0, 0 }); // select wK, no move requested
 
     std::ostringstream after_stream;
     controller.print(after_stream);

@@ -3,7 +3,12 @@
 #include <optional>
 
 #include "model/Position.h"
-#include "rendering/RenderSnapshot.h"
+
+// Pixels - UI-facing only; produced by BoardMapper, consumed by rendering code (Kung-Fu-Chess.Client).
+struct PixelPosition {
+    int x;
+    int y;
+};
 
 // Adapter: converts between pixel coordinates and logical board cells; knows nothing about chess, pieces, or selection state.
 class BoardMapper {

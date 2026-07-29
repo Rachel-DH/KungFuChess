@@ -3,7 +3,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "model/GameEngine.h"
 #include "utils/Types.h"
 #include "animation/animation_state_config.h"
 

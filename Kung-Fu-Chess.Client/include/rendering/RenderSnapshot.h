@@ -3,14 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "model/GameEngine.h"
 #include "utils/Types.h"
-
-// Pixels - UI-facing only. Built by RenderLoop via BoardMapper; this is what Renderer receives.
-struct PixelPosition {
-    int x;
-    int y;
-};
+#include "control/BoardMapper.h" // for PixelPosition
 
 struct PieceRenderState {
     int id;

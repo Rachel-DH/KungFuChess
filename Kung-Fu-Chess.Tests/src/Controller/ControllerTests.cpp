@@ -2,7 +2,6 @@
 
 #include <sstream>
 
-#include "control/BoardMapper.h"
 #include "control/Controller.h"
 #include "model/GameEngine.h"
 #include "input/Parser.h"
@@ -27,90 +26,81 @@ std::string board_of(const Controller& controller) {
 
 TEST_SUITE("Controller") {
 
-// ---- outside the board ---------------------------------------------------
+// ---- out-of-bounds cells ---------------------------------------------------
 
-TEST_CASE("clicking outside the board is ignored") {
+TEST_CASE("clicking a cell outside the board is ignored") {
     SUBCASE("negative x") {
         Controller controller(make_board());
-        controller.click(-50, 50);
+        controller.click(Position{ -1, 1 });
         CHECK_FALSE(controller.has_selection());
     }
     SUBCASE("negative y") {
         Controller controller(make_board());
-        controller.click(50, -50);
+        controller.click(Position{ 1, -1 });
         CHECK_FALSE(controller.has_selection());
     }
     SUBCASE("x past the last column") {
         Controller controller(make_board());
-        controller.click(350, 50); // board is 3 columns wide (0-299px)
+        controller.click(Position{ 3, 1 }); // board is 3 columns wide (0..2)
         CHECK_FALSE(controller.has_selection());
     }
     SUBCASE("y past the last row") {
         Controller controller(make_board());
-        controller.click(50, 350); // board is 3 rows tall (0-299px)
+        controller.click(Position{ 1, 3 }); // board is 3 rows tall (0..2)
         CHECK_FALSE(controller.has_selection());
     }
 }
 
-TEST_CASE("clicking outside the board cancels an active selection") {
+TEST_CASE("clicking a cell outside the board cancels an active selection") {
     Controller controller(make_board());
-    controller.click(50, 50); // select bR at (0,0)
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
     REQUIRE(controller.has_selection());
 
-    controller.click(-50, 50); // outside the board
+    controller.click(Position{ -1, 0 }); // outside the board
     CHECK_FALSE(controller.has_selection());
 }
 
 TEST_CASE("clicking on a degenerate 0x0 board is always ignored") {
     Controller controller(Parser::parse_board({}));
-    controller.click(0, 0);
-    controller.click(50, 50);
+    controller.click(Position{ 0, 0 });
     CHECK_FALSE(controller.has_selection());
 }
 
-// ---- pixel-to-cell mapping -------------------------------------------------
+TEST_CASE("jumping a cell outside the board is silently ignored") {
+    Controller controller(Parser::parse_board({ "wR . ." }));
+    controller.jump(Position{ -1, -1 });
+    CHECK(board_of(controller) == "wR . .\n");
+}
 
-TEST_CASE("pixel coordinates map to the containing cell, not just its center") {
+// ---- deselect() -------------------------------------------------------------
+
+TEST_CASE("deselect clears an active selection") {
     Controller controller(make_board());
+    controller.click(Position{ 0, 0 });
+    REQUIRE(controller.has_selection());
 
-    SUBCASE("top-left pixel of a cell") {
-        controller.click(0, 0);
-        REQUIRE(controller.has_selection());
-        CHECK(controller.selected()->x == 0);
-        CHECK(controller.selected()->y == 0);
-    }
-    SUBCASE("bottom-right pixel of the same cell stays in cell (0,0)") {
-        controller.click(BoardMapper::CELL_SIZE_PX - 1, BoardMapper::CELL_SIZE_PX - 1);
-        REQUIRE(controller.has_selection());
-        CHECK(controller.selected()->x == 0);
-        CHECK(controller.selected()->y == 0);
-    }
-    SUBCASE("crossing the boundary at the start of the next cell selects the piece in the next cell") {
-        controller.click(BoardMapper::CELL_SIZE_PX, BoardMapper::CELL_SIZE_PX / 2); // cell (1,0) = bN
-        REQUIRE(controller.has_selection());
-        CHECK(controller.selected()->x == 1);
-        CHECK(controller.selected()->y == 0);
-    }
-    SUBCASE("center of a piece cell, per the spec example") {
-        controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);
-        REQUIRE(controller.has_selection());
-        CHECK(controller.selected()->x == 0);
-        CHECK(controller.selected()->y == 0);
-    }
+    controller.deselect();
+    CHECK_FALSE(controller.has_selection());
+}
+
+TEST_CASE("deselect with no active selection is a no-op") {
+    Controller controller(make_board());
+    controller.deselect();
+    CHECK_FALSE(controller.has_selection());
 }
 
 // ---- selecting with nothing currently selected -----------------------------
 
 TEST_CASE("clicking an empty cell with no selection is ignored") {
     Controller controller(make_board());
-    controller.click(250, 50);  // (2,0) is empty
-    controller.click(150, 150); // (1,1) is empty
+    controller.click(Position{ 2, 0 }); // empty
+    controller.click(Position{ 1, 1 }); // empty
     CHECK_FALSE(controller.has_selection());
 }
 
 TEST_CASE("clicking a piece with no selection selects it") {
     Controller controller(make_board());
-    controller.click(50, 50); // (0,0) = bR
+    controller.click(Position{ 0, 0 }); // bR
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 0);
     CHECK(controller.selected()->y == 0);
@@ -120,8 +110,8 @@ TEST_CASE("clicking a piece with no selection selects it") {
 
 TEST_CASE("clicking another friendly piece replaces the selection") {
     Controller controller(make_board());
-    controller.click(50, 50);   // select bR at (0,0)
-    controller.click(150, 50);  // bN at (1,0) is also black
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 1, 0 }); // bN at (1,0) is also black
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 1);
     CHECK(controller.selected()->y == 0);
@@ -130,8 +120,8 @@ TEST_CASE("clicking another friendly piece replaces the selection") {
 
 TEST_CASE("re-clicking the same selected piece keeps it selected") {
     Controller controller(make_board());
-    controller.click(50, 50);
-    controller.click(50, 50);
+    controller.click(Position{ 0, 0 });
+    controller.click(Position{ 0, 0 });
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 0);
     CHECK(controller.selected()->y == 0);
@@ -141,8 +131,8 @@ TEST_CASE("re-clicking the same selected piece keeps it selected") {
 
 TEST_CASE("clicking an empty cell while a piece is selected eventually moves it there") {
     Controller controller(make_board());
-    controller.click(50, 50);  // select bR at (0,0)
-    controller.click(50, 150); // (0,1) is empty; straight down is a legal rook move
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 0, 1 }); // empty; straight down is a legal rook move
 
     CHECK_FALSE(controller.has_selection());
     controller.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL); // 1 cell of travel time
@@ -151,8 +141,8 @@ TEST_CASE("clicking an empty cell while a piece is selected eventually moves it 
 
 TEST_CASE("clicking an enemy piece while a piece is selected eventually captures it") {
     Controller controller(make_board());
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // select bR at (0,0)
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, 2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2); // wR at (0,2) is white; straight down the column
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 0, 2 }); // wR at (0,2) is white; straight down the column
 
     CHECK_FALSE(controller.has_selection());
     controller.wait(2 * GameEngine::DEFAULT_MOVE_MS_PER_CELL); // 2 cells of travel time
@@ -161,35 +151,35 @@ TEST_CASE("clicking an enemy piece while a piece is selected eventually captures
 
 TEST_CASE("the vacated source cell is empty once the move has arrived") {
     Controller controller(make_board());
-    controller.click(50, 50);  // select bR at (0,0)
-    controller.click(50, 150); // move down to (0,1)
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 0, 1 }); // move down to (0,1)
     controller.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL);
 
-    controller.click(50, 50); // (0,0) is now empty; no selection to move
+    controller.click(Position{ 0, 0 }); // (0,0) is now empty; no selection to move
     CHECK_FALSE(controller.has_selection());
 }
 
 TEST_CASE("a cell with a move in flight cannot be reselected") {
     Controller controller(make_board());
-    controller.click(50, 50);  // select bR at (0,0)
-    controller.click(50, 150); // move down to (0,1); still in flight
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 0, 1 }); // move down to (0,1); still in flight
 
-    controller.click(50, 50); // (0,0) still shows bR, but it's mid-move
+    controller.click(Position{ 0, 0 }); // (0,0) still shows bR, but it's mid-move
     CHECK_FALSE(controller.has_selection());
 }
 
 TEST_CASE("consecutive moves chain correctly once each one arrives") {
     Controller controller(make_board());
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                           // select bR at (0,0)
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2);   // move bR down to (0,1)
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 0, 1 }); // move bR down to (0,1)
     controller.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL);
 
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2);   // re-select the piece that is now at (0,1)
+    controller.click(Position{ 0, 1 }); // re-select the piece that is now at (0,1)
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 0);
     CHECK(controller.selected()->y == 1);
 
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, 2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2); // move down to (0,2), capturing wR
+    controller.click(Position{ 0, 2 }); // move down to (0,2), capturing wR
     controller.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL);
     CHECK_FALSE(controller.has_selection());
     CHECK(board_of(controller) == ". bN .\n. . .\nbR . wN\n");
@@ -199,8 +189,8 @@ TEST_CASE("consecutive moves chain correctly once each one arrives") {
 
 TEST_CASE("the board still shows the piece at its original cell before arrival") {
     Controller controller(make_board());
-    controller.click(50, 50);  // select bR at (0,0)
-    controller.click(50, 150); // 1 cell of travel time is needed to arrive
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 0, 1 }); // 1 cell of travel time is needed to arrive
 
     controller.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL - 1); // one millisecond short
     CHECK(board_of(controller) == Parser::board_to_string(make_board()) + "\n");
@@ -208,8 +198,8 @@ TEST_CASE("the board still shows the piece at its original cell before arrival")
 
 TEST_CASE("the piece appears at the destination once enough time has passed") {
     Controller controller(make_board());
-    controller.click(50, 50);  // select bR at (0,0)
-    controller.click(50, 150); // 1 cell of travel time is needed to arrive
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 0, 1 }); // 1 cell of travel time is needed to arrive
 
     controller.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL);
     CHECK(board_of(controller) == ". bN .\nbR . .\nwR . wN\n");
@@ -219,11 +209,11 @@ TEST_CASE("the piece appears at the destination once enough time has passed") {
 
 TEST_CASE("a piece already moving cannot be redirected to a new destination") {
     Controller controller(make_board());
-    controller.click(50, 50);  // select bR at (0,0)
-    controller.click(50, 150); // move down to (0,1); 1 cell of travel time
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 0, 1 }); // move down to (0,1); 1 cell of travel time
 
     // Attempt to redirect it mid-route by reselecting its (still visible) origin cell; this fails, so there is no selection left to redirect.
-    controller.click(50, 50);
+    controller.click(Position{ 0, 0 });
     CHECK_FALSE(controller.has_selection());
 
     // Once the original move arrives, the piece is at its first destination only; the redirect attempt had no effect.
@@ -233,16 +223,16 @@ TEST_CASE("a piece already moving cannot be redirected to a new destination") {
 
 TEST_CASE("a piece can be selected and moved again immediately after arriving, with no cooldown") {
     Controller controller(make_board());
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                         // select bR at (0,0)
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2); // move down to (0,1)
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 0, 1 }); // move down to (0,1)
     controller.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL); // arrives; no extra wait afterward
 
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2); // select the just-arrived piece right away
+    controller.click(Position{ 0, 1 }); // select the just-arrived piece right away
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 0);
     CHECK(controller.selected()->y == 1);
 
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, 2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2); // immediately move it again, down to (0,2), capturing wR
+    controller.click(Position{ 0, 2 }); // immediately move it again, down to (0,2), capturing wR
     CHECK_FALSE(controller.has_selection());
     controller.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL);
     CHECK(board_of(controller) == ". bN .\n. . .\nbR . wN\n");
@@ -252,8 +242,8 @@ TEST_CASE("a piece can be selected and moved again immediately after arriving, w
 
 TEST_CASE("a move that doesn't match the selected piece's shape is ignored") {
     Controller controller(make_board());
-    controller.click(50, 50);   // select bR at (0,0)
-    controller.click(150, 150); // (1,1) is a diagonal move; illegal for a rook
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 1, 1 }); // diagonal move; illegal for a rook
 
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 0);
@@ -267,8 +257,8 @@ TEST_CASE("a blocked straight move is ignored") {
         "bN .",
         ".  .",
     }));
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // select bR at (0,0)
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, 2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2); // (0,2) is past bN, which blocks the column at (0,1)
+    controller.click(Position{ 0, 0 }); // select bR at (0,0)
+    controller.click(Position{ 0, 2 }); // past bN, which blocks the column at (0,1)
 
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 0);
@@ -280,10 +270,10 @@ TEST_CASE("a blocked straight move is ignored") {
 TEST_CASE("when two pieces attempt to swap places along the same route, whichever moved first wins") {
     SUBCASE("white moves first") {
         Controller controller(Parser::parse_board({ "wR . . bR" }));
-        controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                             // select wR at (0,0)
-        controller.click(3 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // move wR across to (3,0), capturing bR; 3 cells of travel time
-        controller.click(3 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // select bR at (3,0); it hasn't moved yet
-        controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                             // attempt to move bR back to (0,0); collides with wR's route
+        controller.click(Position{ 0, 0 }); // select wR at (0,0)
+        controller.click(Position{ 3, 0 }); // move wR across to (3,0), capturing bR; 3 cells of travel time
+        controller.click(Position{ 3, 0 }); // select bR at (3,0); it hasn't moved yet
+        controller.click(Position{ 0, 0 }); // attempt to move bR back to (0,0); collides with wR's route
 
         controller.wait(3 * GameEngine::DEFAULT_MOVE_MS_PER_CELL);
         CHECK(board_of(controller) == ". . . wR\n");
@@ -291,10 +281,10 @@ TEST_CASE("when two pieces attempt to swap places along the same route, whicheve
 
     SUBCASE("black moves first") {
         Controller controller(Parser::parse_board({ "wR . . bR" }));
-        controller.click(3 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // select bR at (3,0)
-        controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                             // move bR across to (0,0), capturing wR; 3 cells of travel time
-        controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                             // select wR at (0,0); it hasn't moved yet
-        controller.click(3 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // attempt to move wR back to (3,0); collides with bR's route
+        controller.click(Position{ 3, 0 }); // select bR at (3,0)
+        controller.click(Position{ 0, 0 }); // move bR across to (0,0), capturing wR; 3 cells of travel time
+        controller.click(Position{ 0, 0 }); // select wR at (0,0); it hasn't moved yet
+        controller.click(Position{ 3, 0 }); // attempt to move wR back to (3,0); collides with bR's route
 
         controller.wait(3 * GameEngine::DEFAULT_MOVE_MS_PER_CELL);
         CHECK(board_of(controller) == "bR . . .\n");
@@ -303,10 +293,10 @@ TEST_CASE("when two pieces attempt to swap places along the same route, whicheve
 
 TEST_CASE("a move rejected for colliding with another move's route keeps the current selection") {
     Controller controller(Parser::parse_board({ "wR . . bR" }));
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                             // select wR at (0,0)
-    controller.click(3 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // move wR across to (3,0); still in flight
-    controller.click(3 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // select bR at (3,0)
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                             // attempt to move bR back to (0,0); collides, rejected
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
+    controller.click(Position{ 3, 0 }); // move wR across to (3,0); still in flight
+    controller.click(Position{ 3, 0 }); // select bR at (3,0)
+    controller.click(Position{ 0, 0 }); // attempt to move bR back to (0,0); collides, rejected
 
     REQUIRE(controller.has_selection());
     CHECK(controller.selected()->x == 3);
@@ -320,12 +310,12 @@ TEST_CASE("a move onto another route's cell is rejected for its own illegality, 
         ".  .  bP .",
         ".  .  .  .",
     }));
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2);                             // select wQ at (0,1)
-    controller.click(3 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2); // move wQ across to (3,1), capturing bK; 3 cells of travel time
+    controller.click(Position{ 0, 1 }); // select wQ at (0,1)
+    controller.click(Position{ 3, 1 }); // move wQ across to (3,1), capturing bK; 3 cells of travel time
     controller.wait(200);
 
-    controller.click(2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, 2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2); // select bP at (2,2)
-    controller.click(2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2);     // (2,1) is on wQ's route, but this move is illegal anyway: backward for black
+    controller.click(Position{ 2, 2 }); // select bP at (2,2)
+    controller.click(Position{ 2, 1 }); // (2,1) is on wQ's route, but this move is illegal anyway: backward for black
 
     controller.wait(3000);
     CHECK(board_of(controller) == ". . . .\n. . . wQ\n. . bP .\n. . . .\n");
@@ -339,8 +329,8 @@ TEST_CASE("a knight cannot land on a friendly piece, even though the move shape 
         ".  .  .",
         "wN .  .",
     }));
-    controller.click(50, 250); // select wN at (0,2)
-    controller.click(150, 50); // attempt an L-shaped move onto wP at (1,0); same color
+    controller.click(Position{ 0, 2 }); // select wN at (0,2)
+    controller.click(Position{ 1, 0 }); // attempt an L-shaped move onto wP at (1,0); same color
 
     controller.wait(GameEngine::DEFAULT_MOVE_MS_PER_CELL);
     CHECK(board_of(controller) == ". wP .\n. . .\nwN . .\n");
@@ -350,10 +340,10 @@ TEST_CASE("a knight cannot land on a friendly piece, even though the move shape 
 
 TEST_CASE("a click on an unrelated empty cell after a failed redirect schedules nothing") {
     Controller controller(Parser::parse_board({ "wR . ." }));
-    controller.click(50, 50);  // select wR at (0,0)
-    controller.click(150, 50); // move to (1,0); 1 cell of travel time
-    controller.click(50, 50);  // attempt to redirect; fails, nothing selected
-    controller.click(250, 50); // (2,0) is empty and nothing is selected; ignored
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
+    controller.click(Position{ 1, 0 }); // move to (1,0); 1 cell of travel time
+    controller.click(Position{ 0, 0 }); // attempt to redirect; fails, nothing selected
+    controller.click(Position{ 2, 0 }); // empty and nothing is selected; ignored
 
     controller.wait(2 * GameEngine::DEFAULT_MOVE_MS_PER_CELL);
     CHECK(board_of(controller) == ". wR .\n");
@@ -363,13 +353,13 @@ TEST_CASE("a click on an unrelated empty cell after a failed redirect schedules 
 
 TEST_CASE("selecting then jumping the same piece clears the selection") {
     Controller controller(Parser::parse_board({ "wR . ." }));
-    controller.click(50, 50); // select wR at (0,0)
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
     REQUIRE(controller.has_selection());
 
-    controller.jump(50, 50);  // jumping the selected piece drops the selection
+    controller.jump(Position{ 0, 0 }); // jumping the selected piece drops the selection
     CHECK_FALSE(controller.has_selection());
 
-    controller.click(250, 50); // nothing selected, empty cell -> no move scheduled
+    controller.click(Position{ 2, 0 }); // nothing selected, empty cell -> no move scheduled
     controller.wait(GameEngine::JUMP_DURATION_MS);
     CHECK(board_of(controller) == "wR . .\n");
 }
@@ -378,25 +368,25 @@ TEST_CASE("selecting then jumping the same piece clears the selection") {
 
 TEST_CASE("once the game is over, further clicks are ignored") {
     Controller controller(Parser::parse_board({ "wR . bK", "wN . ." }));
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                             // select wR at (0,0)
-    controller.click(2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // move across to (2,0), capturing bK
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
+    controller.click(Position{ 2, 0 }); // move across to (2,0), capturing bK
     controller.wait(2 * GameEngine::DEFAULT_MOVE_MS_PER_CELL);
     REQUIRE(controller.game_over());
 
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2); // attempt to select wN at (0,1); should be ignored
+    controller.click(Position{ 0, 1 }); // attempt to select wN at (0,1); should be ignored
     CHECK_FALSE(controller.has_selection());
     CHECK(board_of(controller) == ". . wR\nwN . .\n");
 }
 
 TEST_CASE("once the game is over, a click outside the board still clears any stale selection") {
     Controller controller(Parser::parse_board({ "wR . bK", "wN . ." }));
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                             // select wR at (0,0)
-    controller.click(2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // move across to (2,0), capturing bK
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
+    controller.click(Position{ 2, 0 }); // move across to (2,0), capturing bK
     controller.wait(2 * GameEngine::DEFAULT_MOVE_MS_PER_CELL);
     REQUIRE(controller.game_over());
 
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2); // attempt to select wN; ignored, no selection created
-    controller.click(-50, 50); // outside the board
+    controller.click(Position{ 0, 1 }); // attempt to select wN; ignored, no selection created
+    controller.click(Position{ -1, 0 }); // outside the board
     CHECK_FALSE(controller.has_selection());
 }
 

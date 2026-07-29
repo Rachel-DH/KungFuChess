@@ -1,7 +1,5 @@
 #include "control/Controller.h"
 
-#include "control/BoardMapper.h"
-
 Controller::Controller(Board board, long long move_ms_per_cell) : engine_(std::move(board), move_ms_per_cell) {
 }
 
@@ -27,17 +25,16 @@ bool Controller::handle_click_with_selection(Position cell, std::optional<Color>
     return true;
 }
 
-void Controller::click(int pixel_x, int pixel_y) {
-    std::optional<Position> cell = BoardMapper::pixel_to_cell(pixel_x, pixel_y, engine_.width(), engine_.height());
-    if (!cell.has_value()) {
-        selected_.reset(); // clicking outside the board cancels the selection instantly
+void Controller::click(Position cell) {
+    if (!in_bounds(cell)) {
+        deselect(); // defensive: a caller should normally filter this out before calling
         return;
     }
 
-    std::optional<Color> clicked_color = engine_.color_at(*cell);
-    bool clicked_cell_is_selectable = engine_.is_selectable(*cell);
+    std::optional<Color> clicked_color = engine_.color_at(cell);
+    bool clicked_cell_is_selectable = engine_.is_selectable(cell);
 
-    if (selected_.has_value() && handle_click_with_selection(*cell, clicked_color, clicked_cell_is_selectable)) {
+    if (selected_.has_value() && handle_click_with_selection(cell, clicked_color, clicked_cell_is_selectable)) {
         return;
     }
 
@@ -46,17 +43,20 @@ void Controller::click(int pixel_x, int pixel_y) {
     }
 }
 
-void Controller::jump(int pixel_x, int pixel_y) {
-    std::optional<Position> cell = BoardMapper::pixel_to_cell(pixel_x, pixel_y, engine_.width(), engine_.height());
-    if (!cell.has_value()) {
+void Controller::jump(Position cell) {
+    if (!in_bounds(cell)) {
         return;
     }
 
-    if (engine_.request_jump(*cell)) {
-        if (selected_.has_value() && *selected_ == *cell) {
+    if (engine_.request_jump(cell)) {
+        if (selected_.has_value() && *selected_ == cell) {
             selected_.reset();
         }
     }
+}
+
+void Controller::deselect() {
+    selected_.reset();
 }
 
 void Controller::wait(int milliseconds) {

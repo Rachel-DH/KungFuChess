@@ -83,8 +83,8 @@ TEST_CASE("quitting stops the loop and does nothing else this tick") {
 
 TEST_CASE("no pending click still advances the clock and draws exactly once, with elapsed_ms forwarded exactly") {
     Controller controller(Parser::parse_board({ "wR . ." }));
-    controller.click(50, 50);  // select wR at (0,0)
-    controller.click(150, 50); // move to (1,0); 1 cell of travel time
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
+    controller.click(Position{ 1, 0 }); // move to (1,0); 1 cell of travel time
 
     FakeInputSource input;
     FakeRenderer renderer;
@@ -116,8 +116,8 @@ TEST_CASE("a pending click is forwarded to Controller::click, and draw still rec
 
 TEST_CASE("the clock advances before the click is applied, so a piece landing exactly this tick becomes selectable within the same tick") {
     Controller controller(Parser::parse_board({ "wR . ." }));
-    controller.click(50, 50);  // select wR at (0,0)
-    controller.click(150, 50); // move to (1,0); 1 cell of travel time
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
+    controller.click(Position{ 1, 0 }); // move to (1,0); 1 cell of travel time
 
     FakeInputSource input;
     input.pending_click = std::make_pair(150, 50); // (1,0), the move's destination
@@ -132,8 +132,8 @@ TEST_CASE("the clock advances before the click is applied, so a piece landing ex
 
 TEST_CASE("tick reports stop the instant wait ends the game, but still draws the final frame once") {
     Controller controller(Parser::parse_board({ "wR . bK" }));
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                             // select wR at (0,0)
-    controller.click(2 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // move across to (2,0), capturing bK; 2 cells of travel time
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
+    controller.click(Position{ 2, 0 }); // move across to (2,0), capturing bK; 2 cells of travel time
 
     FakeInputSource input;
     FakeRenderer renderer;
@@ -173,7 +173,7 @@ TEST_CASE("a piece at logical (1,0) is drawn at pixel (CELL_SIZE_PX,0)") {
 
 TEST_CASE("the selected piece's is_selected is true while Controller has an active selection") {
     Controller controller(Parser::parse_board({ "wR . ." }));
-    controller.click(50, 50); // select wR at (0,0)
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
     REQUIRE(controller.has_selection());
 
     FakeInputSource input;
@@ -189,7 +189,7 @@ TEST_CASE("the selected piece's is_selected is true while Controller has an acti
 
 TEST_CASE("after a click selects one piece, only that piece's is_selected is true and every other piece's is false") {
     Controller controller(Parser::parse_board({ "wR . bK" }));
-    controller.click(50, 50); // select wR at (0,0)
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
     REQUIRE(controller.has_selection());
 
     FakeInputSource input;
@@ -270,8 +270,8 @@ TEST_CASE("an idle board with a looping animation redraws only on ticks where ad
 
 TEST_CASE("a scheduled move draws every tick while in flight, then stops once it settles back to idle") {
     Controller controller(Parser::parse_board({ "wR . . . ." }));
-    controller.click(BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2);                              // select wR at (0,0)
-    controller.click(4 * BoardMapper::CELL_SIZE_PX + BoardMapper::CELL_SIZE_PX / 2, BoardMapper::CELL_SIZE_PX / 2); // move to (4,0); 4 cells of travel time
+    controller.click(Position{ 0, 0 }); // select wR at (0,0)
+    controller.click(Position{ 4, 0 }); // move to (4,0); 4 cells of travel time
     REQUIRE(controller.has_activity());
 
     FakeInputSource input;

@@ -31,7 +31,13 @@ bool RenderLoop::tick(int elapsed_ms) {
 
     std::optional<std::pair<int, int>> click = input_.poll_click();
     if (click) {
-        controller_.click(click->first, click->second);
+        std::optional<Position> cell =
+            BoardMapper::pixel_to_cell(click->first, click->second, controller_.width(), controller_.height());
+        if (cell.has_value()) {
+            controller_.click(*cell);
+        } else {
+            controller_.deselect();
+        }
     }
 
     std::optional<Position> selected = controller_.selected();
