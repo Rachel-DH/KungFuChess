@@ -1,4 +1,4 @@
-set(KFC_ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess)
+set(KFC_LOCALPLAY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.LocalPlay)
 
 add_executable(Kung-Fu-Chess.Tests
     src/TestMain.cpp
@@ -30,28 +30,23 @@ add_executable(Kung-Fu-Chess.Tests
     src/AnimationStateConfig/AnimationStateConfigTests.cpp
     src/SpriteAnimation/SpriteAnimationTests.cpp
     src/PieceAnimationConfigProvider/PieceAnimationConfigProviderTests.cpp
-    ${KFC_ENGINE_DIR}/src/model/Board.cpp
-    ${KFC_ENGINE_DIR}/src/input/Parser.cpp
-    ${KFC_ENGINE_DIR}/src/model/GameEngine.cpp
-    ${KFC_ENGINE_DIR}/src/model/Piece.cpp
-    ${KFC_ENGINE_DIR}/src/model/RuleEngine.cpp
-    ${KFC_ENGINE_DIR}/src/control/RealTimeArbiter.cpp
-    ${KFC_ENGINE_DIR}/src/control/BoardMapper.cpp
-    ${KFC_ENGINE_DIR}/src/control/Controller.cpp
-    ${KFC_ENGINE_DIR}/src/input/CommandProcessor.cpp
-    ${KFC_ENGINE_DIR}/src/input/ProtocolIO.cpp
-    ${KFC_ENGINE_DIR}/src/rendering/RenderLoop.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/animation_state_config.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/sprite_animation.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/piece_animation_config_provider.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/animation/piece_naming.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/src/assets/asset_path.cpp
+    ${KFC_LOCALPLAY_DIR}/src/input/CommandProcessor.cpp
+    ${KFC_LOCALPLAY_DIR}/src/input/ProtocolIO.cpp
+    ${KFC_LOCALPLAY_DIR}/src/rendering/RenderLoop.cpp
 )
 
+# Kung-Fu-Chess.LocalPlay is an executable, not a library, so (same as
+# before) its sources are recompiled directly here rather than linked.
+# Everything else now comes from real library targets instead.
 target_include_directories(Kung-Fu-Chess.Tests PRIVATE
     include
-    ${KFC_ENGINE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess.UI/include
+    ${KFC_LOCALPLAY_DIR}/include
+)
+
+target_link_libraries(Kung-Fu-Chess.Tests PRIVATE
+    Kung-Fu-Chess.Server
+    Kung-Fu-Chess.Client
+    Kung-Fu-Chess.Shared
 )
 
 target_compile_definitions(Kung-Fu-Chess.Tests PRIVATE

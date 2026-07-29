@@ -1,24 +1,20 @@
-add_executable(Kung-Fu-Chess
+add_executable(Kung-Fu-Chess.LocalPlay
     src/main.cpp
-    src/model/Board.cpp
-    src/input/Parser.cpp
-    src/model/GameEngine.cpp
-    src/model/Piece.cpp
-    src/model/RuleEngine.cpp
-    src/control/RealTimeArbiter.cpp
-    src/control/BoardMapper.cpp
-    src/control/Controller.cpp
     src/input/CommandProcessor.cpp
     src/input/ProtocolIO.cpp
     src/rendering/RenderLoop.cpp
 )
 
-target_include_directories(Kung-Fu-Chess PRIVATE include)
-target_link_libraries(Kung-Fu-Chess PRIVATE Kung-Fu-Chess.UI)
+target_include_directories(Kung-Fu-Chess.LocalPlay PRIVATE include)
+target_link_libraries(Kung-Fu-Chess.LocalPlay PRIVATE
+    Kung-Fu-Chess.Server
+    Kung-Fu-Chess.Client
+    Kung-Fu-Chess.Shared
+)
 
-# Kung-Fu-Chess.UI now pulls OpenCV in at link time, so the exe needs
+# Kung-Fu-Chess.Client pulls OpenCV in at link time, so this exe needs
 # opencv_world*.dll beside it to run. Re-resolve OpenCV_LIB_PATH in this
-# directory's scope (find_package's result in Kung-Fu-Chess.UI's scope
+# directory's scope (find_package's result in Kung-Fu-Chess.Client's scope
 # doesn't propagate to this sibling directory).
 find_package(OpenCV CONFIG REQUIRED)
 
@@ -30,10 +26,10 @@ if(WIN32 AND DEFINED OpenCV_LIB_PATH)
     file(GLOB _kfc_opencv_world_release "${_kfc_opencv_bin_dir}/opencv_world[0-9][0-9][0-9].dll")
     file(GLOB _kfc_opencv_world_debug "${_kfc_opencv_bin_dir}/opencv_world[0-9][0-9][0-9]d.dll")
     if(_kfc_opencv_world_release AND _kfc_opencv_world_debug)
-        add_custom_command(TARGET Kung-Fu-Chess POST_BUILD
+        add_custom_command(TARGET Kung-Fu-Chess.LocalPlay POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<IF:$<CONFIG:Debug>,${_kfc_opencv_world_debug},${_kfc_opencv_world_release}>"
-                "$<TARGET_FILE_DIR:Kung-Fu-Chess>"
+                "$<TARGET_FILE_DIR:Kung-Fu-Chess.LocalPlay>"
         )
     endif()
     unset(_kfc_opencv_world_release)

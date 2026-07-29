@@ -1,8 +1,6 @@
 find_package(OpenCV CONFIG REQUIRED)
 
-set(KFC_ENGINE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Kung-Fu-Chess)
-
-add_library(Kung-Fu-Chess.UI STATIC
+add_library(Kung-Fu-Chess.Client STATIC
     src/assets/asset_path.cpp
     src/assets/img.cpp
     src/rendering/renderer.cpp
@@ -17,8 +15,5 @@ add_library(Kung-Fu-Chess.UI STATIC
     src/animation/sprite_manager.cpp
 )
 
-target_include_directories(Kung-Fu-Chess.UI PUBLIC
-    include
-    ${KFC_ENGINE_DIR}/include
-)
-target_link_libraries(Kung-Fu-Chess.UI PUBLIC ${OpenCV_LIBS})
+target_include_directories(Kung-Fu-Chess.Client PUBLIC include)
+target_link_libraries(Kung-Fu-Chess.Client PUBLIC ${OpenCV_LIBS} Kung-Fu-Chess.Shared)
