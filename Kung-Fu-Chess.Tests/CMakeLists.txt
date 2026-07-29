@@ -31,6 +31,7 @@ add_executable(Kung-Fu-Chess.Tests
     src/SpriteAnimation/SpriteAnimationTests.cpp
     src/PieceAnimationConfigProvider/PieceAnimationConfigProviderTests.cpp
     src/Networking/WebSocketRoundTripTests.cpp
+    src/Wire/WireFormatTests.cpp
     ${KFC_LOCALPLAY_DIR}/src/input/CommandProcessor.cpp
     ${KFC_LOCALPLAY_DIR}/src/input/ProtocolIO.cpp
     ${KFC_LOCALPLAY_DIR}/src/rendering/RenderLoop.cpp
