@@ -6,6 +6,7 @@ add_library(Kung-Fu-Chess.Server STATIC
     src/logics/control/RealTimeArbiter.cpp
     src/logics/control/Controller.cpp
     src/logics/input/Parser.cpp
+    src/net/WebSocketServer.cpp
 )
 
 # include/logics is added separately so existing headers keep resolving via

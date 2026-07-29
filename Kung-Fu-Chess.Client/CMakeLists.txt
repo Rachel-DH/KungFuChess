@@ -13,6 +13,7 @@ add_library(Kung-Fu-Chess.Client STATIC
     src/animation/piece_naming.cpp
     src/animation/sprite_frame_counter.cpp
     src/animation/sprite_manager.cpp
+    src/net/WsClient.cpp
 )
 
 target_include_directories(Kung-Fu-Chess.Client PUBLIC include)
